@@ -1,0 +1,2495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embu County Survey — Analytics Intelligence</title>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+:root {
+  --ink:      #0d1117;
+  --ink2:     #1c2333;
+  --ink3:     #2d3748;
+  --paper:    #f5f4f0;
+  --paper2:   #ede9e3;
+  --paper3:   #e0dbd3;
+  --wire:     #d0cbc2;
+  --muted:    #8b8278;
+  --muted2:   #b5afa8;
+  --signal:   #c8431a;
+  --signal-l: #fdf0eb;
+  --gold:     #c4942a;
+  --gold-l:   #fdf6e3;
+  --teal:     #1a7c6a;
+  --teal-l:   #e8f5f2;
+  --slate:    #2d4a7a;
+  --slate-l:  #edf2fb;
+  --plum:     #6b3fa0;
+  --plum-l:   #f3eeff;
+  --font-h:   system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-b:   system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-m:   'SF Mono', 'Consolas', 'Liberation Mono', monospace;
+  --r:        8px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body {
+  font-family: var(--font-b);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+/* ── LOGIN ── */
+#loginWall {
+  position: fixed; inset: 0;
+  background: var(--ink);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background-image: repeating-linear-gradient(
+    0deg, transparent, transparent 40px,
+    rgba(255,255,255,.02) 40px, rgba(255,255,255,.02) 41px
+  ), repeating-linear-gradient(
+    90deg, transparent, transparent 40px,
+    rgba(255,255,255,.02) 40px, rgba(255,255,255,.02) 41px
+  );
+}
+.login-box {
+  background: var(--ink2);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 48px 52px;
+  width: 420px;
+  text-align: center;
+}
+.login-box .l-mark {
+  width: 56px; height: 56px;
+  background: var(--signal);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  margin: 0 auto 22px;
+  box-shadow: 0 8px 24px rgba(200,67,26,.4);
+}
+.login-box h2 {
+  font-family: var(--font-h);
+  font-size: 24px; font-weight: 800;
+  color: #fff;
+  margin-bottom: 6px;
+}
+.login-box p { color: rgba(255,255,255,.4); font-size: 13px; margin-bottom: 30px; }
+.l-inp {
+  width: 100%; padding: 12px 16px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: var(--r);
+  font-family: var(--font-b);
+  font-size: 14px; color: #fff;
+  margin-bottom: 12px;
+  transition: border-color .2s;
+}
+.l-inp:focus { outline: none; border-color: var(--signal); background: rgba(255,255,255,.09); }
+.l-inp::placeholder { color: rgba(255,255,255,.3); }
+.l-err { color: #ff6b6b; font-size: 12px; margin-bottom: 10px; display: none; }
+.l-btn {
+  width: 100%; padding: 13px;
+  background: var(--signal);
+  color: #fff; border: none; border-radius: var(--r);
+  font-family: var(--font-h); font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: opacity .2s;
+  box-shadow: 0 4px 18px rgba(200,67,26,.4);
+}
+.l-btn:hover { opacity: .88; }
+
+/* ── TOP BAR ── */
+.topbar {
+  background: var(--ink);
+  height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.topbar-brand {
+  display: flex; align-items: center; gap: 12px;
+}
+.brand-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 0 3px rgba(200,67,26,.25);
+  animation: pulse-dot 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 3px rgba(200,67,26,.25)} 50%{box-shadow:0 0 0 6px rgba(200,67,26,.1)} }
+.brand-name {
+  font-family: var(--font-h);
+  font-size: 15px; font-weight: 800;
+  color: #fff; letter-spacing: -.2px;
+}
+.brand-sub { font-size: 11px; color: rgba(255,255,255,.4); margin-left: 4px; }
+.topbar-meta {
+  display: flex; align-items: center; gap: 16px;
+}
+.meta-chip {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-m);
+  font-size: 11px; color: rgba(255,255,255,.45);
+  background: rgba(255,255,255,.06);
+  padding: 5px 12px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.meta-chip strong { color: rgba(255,255,255,.8); font-weight: 500; }
+.topbar-actions { display: flex; gap: 8px; }
+.tbtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: var(--r);
+  font-family: var(--font-b); font-size: 13px; font-weight: 500;
+  cursor: pointer; border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.07); color: rgba(255,255,255,.75);
+  transition: all .15s; white-space: nowrap;
+}
+.tbtn:hover { background: rgba(255,255,255,.12); color: #fff; }
+.tbtn.primary { background: var(--signal); color: #fff; border-color: var(--signal); }
+.tbtn.primary:hover { background: #a83414; }
+.tbtn:disabled { opacity: .4; pointer-events: none; }
+
+/* ── TABS ── */
+.tabs-bar {
+  background: var(--ink2);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 0 32px;
+  display: flex; gap: 2px;
+  overflow-x: auto;
+}
+.tab {
+  padding: 14px 20px;
+  font-family: var(--font-b); font-size: 13px; font-weight: 500;
+  color: rgba(255,255,255,.4);
+  cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all .15s;
+}
+.tab:hover { color: rgba(255,255,255,.75); }
+.tab.active { color: #fff; border-bottom-color: var(--signal); }
+
+/* ── LAYOUT ── */
+.page { max-width: 1600px; margin: 0 auto; padding: 28px 32px 60px; }
+
+/* ── HERO STAT ROW ── */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.hstat {
+  background: var(--ink2);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: var(--r);
+  padding: 16px 18px;
+  position: relative; overflow: hidden;
+}
+.hstat::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  border-radius: var(--r) var(--r) 0 0;
+}
+.hs-signal::before { background: var(--signal); }
+.hs-gold::before   { background: var(--gold); }
+.hs-teal::before   { background: var(--teal); }
+.hs-slate::before  { background: var(--slate); }
+.hs-plum::before   { background: var(--plum); }
+.hstat-label { font-size: 10px; font-weight: 600; letter-spacing: .7px; text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 8px; }
+.hstat-val   { font-family: var(--font-m); font-size: 26px; font-weight: 500; color: #fff; line-height: 1; }
+.hstat-sub   { font-size: 11px; color: rgba(255,255,255,.3); margin-top: 5px; font-family: var(--font-m); }
+
+/* ── SECTION PANELS ── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.section-label {
+  font-family: var(--font-h);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--wire);
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 24px; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 18px; margin-bottom: 24px; }
+.span2  { grid-column: span 2; }
+.span3  { grid-column: span 3; }
+
+/* ── CARD ── */
+.card {
+  background: #fff;
+  border: 1px solid var(--wire);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.card-head {
+  padding: 14px 18px 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.card-title {
+  font-family: var(--font-h);
+  font-size: 13px; font-weight: 700;
+  color: var(--ink); letter-spacing: -.1px;
+}
+.card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.card-badge {
+  font-family: var(--font-m);
+  font-size: 10px; font-weight: 500;
+  padding: 3px 9px; border-radius: 20px;
+  white-space: nowrap; margin-top: 2px;
+}
+.badge-signal { background: var(--signal-l); color: var(--signal); }
+.badge-gold   { background: var(--gold-l);   color: var(--gold); }
+.badge-teal   { background: var(--teal-l);   color: var(--teal); }
+.badge-slate  { background: var(--slate-l);  color: var(--slate); }
+.badge-plum   { background: var(--plum-l);   color: var(--plum); }
+.card-body { padding: 16px 18px 18px; }
+
+/* ── HORIZONTAL BAR ── */
+.hbar-list { display: flex; flex-direction: column; gap: 10px; }
+.hbar-item { }
+.hbar-meta { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.hbar-label { font-size: 12px; color: var(--ink3); font-weight: 500; }
+.hbar-vals  { display: flex; align-items: center; gap: 8px; }
+.hbar-pct   { font-family: var(--font-m); font-size: 12px; color: var(--muted); }
+.hbar-n     { font-family: var(--font-m); font-size: 11px; color: var(--muted2); }
+.hbar-track { height: 7px; background: var(--paper2); border-radius: 4px; overflow: hidden; }
+.hbar-fill  { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(.16,1,.3,1); }
+.fill-signal { background: var(--signal); }
+.fill-gold   { background: var(--gold); }
+.fill-teal   { background: var(--teal); }
+.fill-slate  { background: var(--slate); }
+.fill-plum   { background: var(--plum); }
+.fill-muted  { background: var(--muted2); }
+
+/* ── DONUT WRAP ── */
+.donut-wrap { position: relative; max-width: 220px; margin: 0 auto; }
+.donut-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center; pointer-events: none;
+}
+.donut-big   { font-family: var(--font-m); font-size: 26px; font-weight: 500; color: var(--ink); line-height: 1; }
+.donut-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+/* ── LEGEND ── */
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink3); }
+.legend-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── KPI GRID ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.kpi-tile {
+  background: var(--paper2);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  text-align: center;
+}
+.kpi-val  { font-family: var(--font-m); font-size: 28px; font-weight: 500; color: var(--ink); line-height: 1; }
+.kpi-lbl  { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+/* ── MEAN SCORE TABLE ── */
+.score-table { width: 100%; border-collapse: collapse; }
+.score-table tr { border-bottom: 1px solid var(--paper2); }
+.score-table tr:last-child { border-bottom: none; }
+.score-table td { padding: 9px 4px; font-size: 13px; }
+.score-table td:first-child { color: var(--ink3); font-weight: 500; }
+.score-table td:last-child { width: 140px; }
+.score-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.score-bar-track { flex: 1; height: 6px; background: var(--paper2); border-radius: 4px; overflow: hidden; }
+.score-bar-fill  { height: 100%; border-radius: 4px; background: var(--teal); transition: width 1s cubic-bezier(.16,1,.3,1); }
+.score-num { font-family: var(--font-m); font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+/* ── CROSS-TAB ── */
+.xtab { width: 100%; border-collapse: collapse; font-size: 12px; }
+.xtab th { padding: 8px 10px; background: var(--paper2); font-weight: 600; color: var(--ink3); text-align: left; border-bottom: 2px solid var(--wire); white-space: nowrap; }
+.xtab td { padding: 7px 10px; border-bottom: 1px solid var(--paper2); color: var(--muted); vertical-align: middle; }
+.xtab td:first-child { font-weight: 500; color: var(--ink3); }
+.xtab tr:hover td  { background: var(--paper); }
+.mini-bar { display: flex; align-items: center; gap: 6px; }
+.mini-track { width: 60px; height: 5px; background: var(--paper2); border-radius: 3px; overflow: hidden; }
+.mini-fill  { height: 100%; border-radius: 3px; background: var(--slate); }
+
+/* ── WORD FREQ ── */
+.word-cloud { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.word-pill {
+  font-family: var(--font-b);
+  border-radius: 20px;
+  padding: 4px 12px;
+  cursor: default;
+  transition: transform .15s;
+  white-space: nowrap;
+}
+.word-pill:hover { transform: scale(1.05); }
+
+/* ── PRIORITY TABLE ── */
+.priority-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--paper2); }
+.priority-row:last-child { border-bottom: none; }
+.priority-rank {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ink); color: #fff;
+  font-family: var(--font-m); font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.priority-rank.r1 { background: var(--signal); }
+.priority-rank.r2 { background: var(--gold); }
+.priority-rank.r3 { background: var(--teal); }
+.priority-text { flex: 1; font-size: 13px; color: var(--ink3); font-weight: 500; }
+.priority-score { font-family: var(--font-m); font-size: 12px; color: var(--muted); white-space: nowrap; }
+.priority-bar-track { flex: 1; max-width: 100px; height: 5px; background: var(--paper2); border-radius: 3px; overflow: hidden; }
+.priority-bar-fill  { height: 100%; border-radius: 3px; background: var(--signal); }
+
+/* ── INSIGHT BOX ── */
+.insight {
+  background: linear-gradient(135deg, var(--ink2), var(--ink3));
+  border-radius: var(--r);
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  border-left: 3px solid var(--signal);
+}
+.insight-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--signal); margin-bottom: 8px; }
+.insight-text  { font-size: 13px; color: rgba(255,255,255,.8); line-height: 1.7; }
+.insight-text strong { color: #fff; }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap;
+  background: #fff; border: 1px solid var(--wire);
+  border-radius: var(--r); padding: 12px 16px;
+  margin-bottom: 20px;
+}
+.filter-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); white-space: nowrap; }
+.fsel {
+  padding: 7px 12px;
+  border: 1.5px solid var(--wire);
+  border-radius: 6px;
+  font-family: var(--font-b); font-size: 13px;
+  background: var(--paper); color: var(--ink);
+  cursor: pointer; transition: border-color .15s;
+}
+.fsel:focus { outline: none; border-color: var(--signal); }
+.fsel-spacer { flex: 1; }
+.fsel-clear {
+  padding: 7px 14px; border-radius: 6px;
+  font-family: var(--font-b); font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--wire);
+  background: #fff; color: var(--muted);
+  transition: all .15s;
+}
+.fsel-clear:hover { border-color: var(--signal); color: var(--signal); }
+
+/* ── LOADING OVERLAY ── */
+#loadingOverlay {
+  position: fixed; inset: 0;
+  background: var(--paper);
+  z-index: 500;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 20px;
+}
+.load-spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--paper3);
+  border-top-color: var(--signal);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.load-text { font-family: var(--font-m); font-size: 13px; color: var(--muted); }
+
+/* ── CHART WRAPPER ── */
+.chart-wrap { position: relative; height: 240px; }
+.chart-wrap.tall { height: 300px; }
+.chart-wrap.short { height: 180px; }
+
+/* ── EMPTY STATE ── */
+.no-data { text-align: center; padding: 40px 20px; color: var(--muted2); font-size: 13px; }
+
+/* ── RESPONSIVE ── */
+@media(max-width: 1200px) { .hero-stats { grid-template-columns: repeat(4,1fr); } }
+@media(max-width: 900px)  {
+  .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+  .hero-stats { grid-template-columns: repeat(4,1fr); }
+  .page { padding: 16px 16px 40px; }
+  .topbar { padding: 0 16px; }
+  .tabs-bar { padding: 0 16px; }
+  .span2, .span3 { grid-column: span 1; }
+}
+@media(max-width: 640px) {
+  .hero-stats { grid-template-columns: repeat(2,1fr); }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── REPORT TAB ── */
+.report-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.report-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  margin-bottom: 24px;
+}
+.report-doc {
+  background: #fff;
+  border: 1px solid var(--wire);
+  border-radius: var(--r);
+  padding: 56px 64px;
+  font-family: var(--font-b);
+  line-height: 1.8;
+  color: var(--ink);
+}
+.report-doc .r-cover {
+  text-align: center;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 36px;
+  margin-bottom: 40px;
+}
+.report-doc .r-cover .r-logo {
+  width: 52px; height: 52px;
+  background: var(--signal);
+  border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(200,67,26,.3);
+}
+.report-doc .r-cover h1 {
+  font-family: var(--font-h);
+  font-size: 28px; font-weight: 800;
+  color: var(--ink); margin-bottom: 8px;
+}
+.report-doc .r-cover .r-subtitle {
+  font-size: 15px; color: var(--muted);
+  margin-bottom: 20px;
+}
+.report-doc .r-cover .r-meta {
+  display: flex; justify-content: center; gap: 32px;
+  font-size: 12px; color: var(--muted);
+  font-family: var(--font-m);
+}
+.report-doc .r-cover .r-meta span strong { color: var(--ink); }
+.r-toc {
+  background: var(--paper2);
+  border-radius: var(--r);
+  padding: 24px 28px;
+  margin-bottom: 40px;
+}
+.r-toc h3 {
+  font-family: var(--font-h);
+  font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .8px;
+  color: var(--muted); margin-bottom: 12px;
+}
+.r-toc ol {
+  list-style: none; counter-reset: toc;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.r-toc ol li {
+  counter-increment: toc;
+  font-size: 13px; color: var(--ink3);
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer;
+}
+.r-toc ol li:hover { color: var(--signal); }
+.r-toc ol li::before {
+  content: counter(toc, decimal-leading-zero);
+  font-family: var(--font-m); font-size: 11px;
+  color: var(--muted2); width: 22px; flex-shrink: 0;
+}
+.r-section {
+  margin-bottom: 40px;
+  scroll-margin-top: 80px;
+}
+.r-section h2 {
+  font-family: var(--font-h);
+  font-size: 18px; font-weight: 800;
+  color: var(--ink);
+  border-left: 4px solid var(--signal);
+  padding-left: 14px;
+  margin-bottom: 14px;
+}
+.r-section h3 {
+  font-family: var(--font-h);
+  font-size: 14px; font-weight: 700;
+  color: var(--ink3); margin: 20px 0 8px;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.r-section p {
+  font-size: 14px; color: var(--ink3);
+  margin-bottom: 12px;
+}
+.r-section ul {
+  padding-left: 20px; margin-bottom: 14px;
+}
+.r-section ul li {
+  font-size: 14px; color: var(--ink3);
+  margin-bottom: 6px;
+}
+.r-table {
+  width: 100%; border-collapse: collapse;
+  margin: 16px 0 20px; font-size: 13px;
+}
+.r-table th {
+  background: var(--ink); color: #fff;
+  padding: 9px 12px; text-align: left;
+  font-weight: 600; font-size: 12px;
+  letter-spacing: .3px;
+}
+.r-table td {
+  padding: 8px 12px; border-bottom: 1px solid var(--paper2);
+  color: var(--ink3);
+}
+.r-table tr:hover td { background: var(--paper); }
+.r-table td.num { font-family: var(--font-m); color: var(--ink); }
+.r-callout {
+  border-left: 4px solid var(--signal);
+  background: var(--signal-l);
+  padding: 14px 18px;
+  border-radius: 0 var(--r) var(--r) 0;
+  margin: 16px 0;
+  font-size: 13px; color: var(--ink3);
+}
+.r-callout strong { color: var(--signal); }
+.r-callout-teal {
+  border-left-color: var(--teal);
+  background: var(--teal-l);
+}
+.r-callout-teal strong { color: var(--teal); }
+.r-callout-gold {
+  border-left-color: var(--gold);
+  background: var(--gold-l);
+}
+.r-callout-gold strong { color: var(--gold); }
+.r-divider { border: none; border-top: 1px solid var(--wire); margin: 36px 0; }
+.r-badge-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 16px; }
+.r-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  font-family: var(--font-m);
+}
+.rb-signal { background: var(--signal-l); color: var(--signal); }
+.rb-teal   { background: var(--teal-l);   color: var(--teal); }
+.rb-gold   { background: var(--gold-l);   color: var(--gold); }
+.rb-slate  { background: var(--slate-l);  color: var(--slate); }
+.rb-plum   { background: var(--plum-l);   color: var(--plum); }
+.r-finding-box {
+  background: linear-gradient(135deg, var(--ink) 0%, var(--ink2) 100%);
+  border-radius: var(--r);
+  padding: 28px 32px;
+  margin: 24px 0;
+  color: rgba(255,255,255,.85);
+  font-size: 14px; line-height: 1.8;
+}
+.r-finding-box h3 {
+  color: #fff; text-transform: none;
+  letter-spacing: 0; font-size: 16px;
+  margin-bottom: 14px; margin-top: 0;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  padding-bottom: 10px;
+}
+.r-finding-box p { color: rgba(255,255,255,.75); }
+.r-finding-box strong { color: #fff; }
+@media print {
+  .topbar, .tabs-bar, .hero-stats, .filter-bar, .report-actions { display: none !important; }
+  .tab-content { display: block !important; }
+  #tab-report { display: block !important; }
+  .report-doc { border: none; padding: 0; }
+  body { background: #fff; }
+}
+@media(max-width: 768px) {
+  .report-doc { padding: 28px 24px; }
+  .r-toc ol { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginWall">
+  <div class="login-box">
+    <div class="l-mark">📊</div>
+    <h2>Survey Analytics</h2>
+    <p>Embu County Political Survey · Intelligence Portal</p>
+    <input class="l-inp" id="lu" type="text" placeholder="Username" autocomplete="off">
+    <input class="l-inp" id="lp" type="password" placeholder="Password">
+    <p class="l-err" id="lerr">Incorrect credentials. Please try again.</p>
+    <button class="l-btn" onclick="doLogin()">Access Analytics →</button>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="loadingOverlay" style="display:none;">
+  <div class="load-spinner"></div>
+  <div class="load-text" id="loadMsg">Loading survey data…</div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-dot"></div>
+    <div>
+      <span class="brand-name">Embu County Survey</span>
+      <span class="brand-sub">Analytics Intelligence</span>
+    </div>
+  </div>
+  <div class="topbar-meta">
+    <div class="meta-chip"><span>N =</span> <strong id="tm-n">—</strong></div>
+    <div class="meta-chip"><span>Last updated</span> <strong id="tm-time">—</strong></div>
+    <div class="meta-chip"><span>Researchers</span> <strong id="tm-res">—</strong></div>
+  </div>
+  <div class="topbar-actions">
+    <button class="tbtn" onclick="refreshData()" id="refreshBtn">↻ Refresh</button>
+    <button class="tbtn" onclick="switchTab('report', document.querySelector('[data-tab=report]'))">📄 Report</button>
+    <button class="tbtn primary" onclick="exportExcelAnalysis()">⬇ Export Excel</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-bar">
+  <div class="tab active" data-tab="overview" onclick="switchTab('overview',this)">Overview</div>
+  <div class="tab" data-tab="demographics" onclick="switchTab('demographics',this)">Demographics</div>
+  <div class="tab" data-tab="political" onclick="switchTab('political',this)">Political Participation</div>
+  <div class="tab" data-tab="governance" onclick="switchTab('governance',this)">Governance &amp; Projects</div>
+  <div class="tab" data-tab="services" onclick="switchTab('services',this)">Service Delivery</div>
+  <div class="tab" data-tab="economics" onclick="switchTab('economics',this)">Economics &amp; Sectors</div>
+  <div class="tab" data-tab="sentiment" onclick="switchTab('sentiment',this)">Political Sentiment</div>
+  <div class="tab" data-tab="crosstab" onclick="switchTab('crosstab',this)">Cross-Tabulation</div>
+  <div class="tab" data-tab="qualitative" onclick="switchTab('qualitative',this)">Qualitative Themes</div>
+  <div class="tab" data-tab="report" onclick="switchTab('report',this)">📄 Analysis Report</div>
+</div>
+
+<div class="page">
+
+<!-- HERO STATS -->
+<div class="hero-stats">
+  <div class="hstat hs-signal">
+    <div class="hstat-label">Total Responses</div>
+    <div class="hstat-val" id="hs-total">—</div>
+    <div class="hstat-sub" id="hs-today">— today</div>
+  </div>
+  <div class="hstat hs-gold">
+    <div class="hstat-label">Female</div>
+    <div class="hstat-val" id="hs-female">—</div>
+    <div class="hstat-sub" id="hs-female-p">—%</div>
+  </div>
+  <div class="hstat hs-gold">
+    <div class="hstat-label">Male</div>
+    <div class="hstat-val" id="hs-male">—</div>
+    <div class="hstat-sub" id="hs-male-p">—%</div>
+  </div>
+  <div class="hstat hs-teal">
+    <div class="hstat-label">Registered Voters</div>
+    <div class="hstat-val" id="hs-voters">—</div>
+    <div class="hstat-sub" id="hs-voters-p">—%</div>
+  </div>
+  <div class="hstat hs-slate">
+    <div class="hstat-label">Mbarire Leads</div>
+    <div class="hstat-val" id="hs-mbarire">—</div>
+    <div class="hstat-sub" id="hs-mbarire-p">—% vote intent</div>
+  </div>
+  <div class="hstat hs-slate">
+    <div class="hstat-label">Kivuti Support</div>
+    <div class="hstat-val" id="hs-kivuti">—</div>
+    <div class="hstat-sub" id="hs-kivuti-p">—% vote intent</div>
+  </div>
+  <div class="hstat hs-plum">
+    <div class="hstat-label">GPS Verified</div>
+    <div class="hstat-val" id="hs-gps">—</div>
+    <div class="hstat-sub" id="hs-gps-p">—% of total</div>
+  </div>
+  <div class="hstat hs-signal">
+    <div class="hstat-label">Active Researchers</div>
+    <div class="hstat-val" id="hs-researchers">—</div>
+    <div class="hstat-sub">enumerators</div>
+  </div>
+</div>
+
+<!-- FILTER BAR (shared across all tabs) -->
+<div class="filter-bar" id="globalFilter">
+  <span class="filter-label">Segment by</span>
+  <select class="fsel" id="gf-constituency" onchange="recomputeAll()">
+    <option value="">All Constituencies</option>
+    <option>Manyatta</option><option>Runyenjes</option>
+    <option>Mbeere North</option><option>Mbeere South</option>
+  </select>
+  <select class="fsel" id="gf-ward" onchange="recomputeAll()">
+    <option value="">All Wards</option>
+    <optgroup label="Manyatta"><option>Ruguru/Ngandori</option><option>Kithimu</option><option>Nginda</option><option>Mbeti North</option><option>Kirimari</option><option>Gaturi South</option></optgroup>
+    <optgroup label="Runyenjes"><option>Gaturi North</option><option>Kaagari South</option><option>Kaagari North</option><option>Central Ward</option><option>Kyeni North</option><option>Kyeni South</option></optgroup>
+    <optgroup label="Mbeere South"><option>Mwea</option><option>Makima</option><option>Mbeti South</option><option>Mavuria</option><option>Kiambere</option></optgroup>
+    <optgroup label="Mbeere North"><option>Nthawa</option><option>Muminji</option><option>Evurore</option></optgroup>
+  </select>
+  <select class="fsel" id="gf-gender" onchange="recomputeAll()">
+    <option value="">All Genders</option>
+    <option>Male</option><option>Female</option>
+  </select>
+  <select class="fsel" id="gf-age" onchange="recomputeAll()">
+    <option value="">All Ages</option>
+    <option>18-27</option><option>28-37</option><option>38-47</option>
+    <option>48-57</option><option>58-67</option><option>68-77</option><option>Over 78</option>
+  </select>
+  <select class="fsel" id="gf-governor" onchange="recomputeAll()">
+    <option value="">All Gov. Picks</option>
+    <option>Cecily Mbarire</option><option>Lenny Kivuti</option>
+    <option>A new face</option><option>Not yet decided</option>
+  </select>
+  <div class="fsel-spacer"></div>
+  <span style="font-family:var(--font-m);font-size:12px;color:var(--muted)">N = <strong id="gf-n" style="color:var(--ink)">—</strong></span>
+  <button class="fsel-clear" onclick="clearFilters()">✕ Clear</button>
+</div>
+
+<!-- ══════════ TAB: OVERVIEW ══════════ -->
+<div class="tab-content active" id="tab-overview">
+
+  <div class="insight" id="insight-box">
+    <div class="insight-label">📌 Key Insight</div>
+    <div class="insight-text" id="insight-text">Loading analysis…</div>
+  </div>
+
+  <div class="section-label">Survey Coverage</div>
+  <div class="grid-4" style="margin-bottom:24px;">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">A1 — Gender Split</div><div class="card-sub">Respondent profile</div></div><span class="card-badge badge-signal">Section A</span></div>
+      <div class="card-body">
+        <div class="donut-wrap" style="max-width:180px;">
+          <canvas id="ch-gender"></canvas>
+          <div class="donut-center"><div class="donut-big" id="donut-gender-n">—</div><div class="donut-label">respondents</div></div>
+        </div>
+        <div class="legend" id="legend-gender"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">A4 — Age Distribution</div><div class="card-sub">Age categories</div></div><span class="card-badge badge-gold">Section A</span></div>
+      <div class="card-body">
+        <div class="chart-wrap short"><canvas id="ch-age"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">A2 — Constituency</div><div class="card-sub">Geographic distribution</div></div><span class="card-badge badge-teal">Section A</span></div>
+      <div class="card-body">
+        <div class="hbar-list" id="hbar-constituency"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G1 — Vote Intent</div><div class="card-sub">Governor preference</div></div><span class="card-badge badge-signal">Section G</span></div>
+      <div class="card-body">
+        <div class="donut-wrap" style="max-width:180px;">
+          <canvas id="ch-governor-ov"></canvas>
+          <div class="donut-center"><div class="donut-label" style="font-size:11px;">Governor<br>Preference</div></div>
+        </div>
+        <div class="legend" id="legend-governor-ov"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Service Delivery Mean Scores (Section E)</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Service Area Mean Scores</div><div class="card-sub">Scale: 1 (Not Sure) → 5 (Excellent)</div></div><span class="card-badge badge-teal">Avg</span></div>
+      <div class="card-body">
+        <table class="score-table" id="score-table"></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">D1 — Government Performance</div><div class="card-sub">Overall county rating</div></div><span class="card-badge badge-slate">Section D</span></div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas id="ch-performance"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: DEMOGRAPHICS ══════════ -->
+<div class="tab-content" id="tab-demographics">
+  <div class="section-label">Section A — Respondent Profile</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">A1 — Gender</div></div><span class="card-badge badge-signal">A1</span></div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas id="ch-gender2"></canvas></div>
+        <div class="legend" id="legend-gender2"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">A5 — Education Level</div></div><span class="card-badge badge-gold">A5</span></div>
+      <div class="card-body">
+        <div class="hbar-list" id="hbar-education"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">A6 — Employment Status</div></div><span class="card-badge badge-teal">A6</span></div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas id="ch-employment"></canvas></div>
+        <div class="legend" id="legend-employment"></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">A4 — Age Distribution</div></div><span class="card-badge badge-slate">A4</span></div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas id="ch-age2"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">A2/A3 — Constituency & Ward Coverage</div></div><span class="card-badge badge-plum">A2</span></div>
+      <div class="card-body">
+        <div class="hbar-list" id="hbar-constituency2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: POLITICAL ══════════ -->
+<div class="tab-content" id="tab-political">
+  <div class="section-label">Section B — Political Participation &amp; Governance</div>
+  <div class="grid-4">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">B1 — Registered Voters</div><div class="card-sub">% of respondents</div></div><span class="card-badge badge-teal">B1</span></div>
+      <div class="card-body">
+        <div class="kpi-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="kpi-tile"><div class="kpi-val" id="kpi-voter-yes">—</div><div class="kpi-lbl">Registered</div></div>
+          <div class="kpi-tile"><div class="kpi-val" id="kpi-voter-no">—</div><div class="kpi-lbl">Not Registered</div></div>
+        </div>
+        <div class="hbar-list" style="margin-top:14px;" id="hbar-voter"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">B2 — Engagement Frequency</div></div><span class="card-badge badge-signal">B2</span></div>
+      <div class="card-body">
+        <div class="hbar-list" id="hbar-engage"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">B4 — Opinion Considered?</div></div><span class="card-badge badge-gold">B4</span></div>
+      <div class="card-body">
+        <div class="chart-wrap short"><canvas id="ch-opinion"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">B7 — Policy Awareness</div></div><span class="card-badge badge-slate">B7</span></div>
+      <div class="card-body">
+        <div class="chart-wrap short"><canvas id="ch-policy"></canvas></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">B3 — Motivation to Participate</div><div class="card-sub">Multi-select (% of respondents who ticked)</div></div><span class="card-badge badge-signal">B3</span></div>
+      <div class="card-body">
+        <div class="hbar-list" id="hbar-motivation"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">B6 — Areas Not Delivered</div><div class="card-sub">Multi-select (% of respondents who ticked)</div></div><span class="card-badge badge-signal">B6</span></div>
+      <div class="card-body">
+        <div class="hbar-list" id="hbar-notdelivered"></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">C1 — Information Sources</div><div class="card-sub">How people get political news</div></div><span class="card-badge badge-plum">C1</span></div>
+      <div class="card-body">
+        <div class="hbar-list" id="hbar-infosources"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">C2 — Transparency Rating</div></div><span class="card-badge badge-teal">C2</span></div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas id="ch-transparency"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: GOVERNANCE ══════════ -->
+<div class="tab-content" id="tab-governance">
+  <div class="section-label">Section D — Project Delivery Assessment</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">D1 — Government Performance</div></div><span class="card-badge badge-signal">D1</span></div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas id="ch-performance2"></canvas></div>
+        <div class="legend" id="legend-performance2"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">C3 — Political Favoritism</div></div><span class="card-badge badge-gold">C3</span></div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas id="ch-bias"></canvas></div>
+        <div class="legend" id="legend-bias"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">D6 — Top Ward Priorities</div><div class="card-sub">Weighted score (Rank 1=5pts … Rank 5=1pt)</div></div><span class="card-badge badge-teal">D6</span></div>
+      <div class="card-body">
+        <div id="priority-list-d6"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: SERVICES ══════════ -->
+<div class="tab-content" id="tab-services">
+  <div class="section-label">Section E — Service Delivery Ratings</div>
+  <div class="grid-2">
+    <div class="card span2">
+      <div class="card-head"><div><div class="card-title">Mean Scores by Service Area</div><div class="card-sub">Scale: Not Sure=1, Poor=2, Fair=3, Good=4, Excellent=5</div></div><span class="card-badge badge-teal">Section E</span></div>
+      <div class="card-body">
+        <div class="chart-wrap tall"><canvas id="ch-services-radar"></canvas></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-4">
+    <div class="card" id="svc-card-agri"></div>
+    <div class="card" id="svc-card-infra"></div>
+    <div class="card" id="svc-card-edu"></div>
+    <div class="card" id="svc-card-health"></div>
+    <div class="card" id="svc-card-youth"></div>
+    <div class="card" id="svc-card-women"></div>
+    <div class="card" id="svc-card-govt"></div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: ECONOMICS ══════════ -->
+<div class="tab-content" id="tab-economics">
+  <div class="section-label">Section F — Economic &amp; Sectoral Issues</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">F1 — Farming Challenges</div><div class="card-sub">Multi-select frequency</div></div><span class="card-badge badge-teal">F1</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-farming"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">F3 — Infrastructure Needed</div><div class="card-sub">Multi-select frequency</div></div><span class="card-badge badge-slate">F3</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-infra-needed"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">F4 — SME Obstacles</div><div class="card-sub">Multi-select frequency</div></div><span class="card-badge badge-gold">F4</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-sme"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">F6 — Healthcare Challenges</div><div class="card-sub">Multi-select frequency</div></div><span class="card-badge badge-signal">F6</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-health-challenges"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">F2 — Infrastructure Rating</div></div><span class="card-badge badge-slate">F2</span></div>
+      <div class="card-body"><div class="chart-wrap short"><canvas id="ch-infra-rating"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">F8 — Education Quality Rating</div></div><span class="card-badge badge-gold">F8</span></div>
+      <div class="card-body"><div class="chart-wrap short"><canvas id="ch-edu-rating"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">F9 — Education Concerns</div><div class="card-sub">Multi-select frequency</div></div><span class="card-badge badge-plum">F9</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-edu-concerns"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: SENTIMENT ══════════ -->
+<div class="tab-content" id="tab-sentiment">
+  <div class="section-label">Section G — Political Sentiment</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G1 — Governor Voting Intention</div></div><span class="card-badge badge-signal">G1</span></div>
+      <div class="card-body">
+        <div class="chart-wrap tall"><canvas id="ch-governor"></canvas></div>
+        <div class="legend" id="legend-governor"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G2 — Reasons FOR Voting</div><div class="card-sub">What voters value most</div></div><span class="card-badge badge-teal">G2</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-vote-reasons"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G3 — Anti-Mbarire Reasons</div><div class="card-sub">Primary liabilities</div></div><span class="card-badge badge-signal">G3</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-anti-mbarire"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G5 — Anti-Kivuti Reasons</div><div class="card-sub">Primary liabilities</div></div><span class="card-badge badge-gold">G5</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-anti-kivuti"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: CROSS-TAB ══════════ -->
+<div class="tab-content" id="tab-crosstab">
+  <div class="section-label">Cross-Tabulation Analysis</div>
+
+  <div class="grid-2">
+    <div class="card span2">
+      <div class="card-head"><div><div class="card-title">Governor Preference by Constituency</div><div class="card-sub">% per constituency who prefer each candidate</div></div><span class="card-badge badge-signal">G1 × A2</span></div>
+      <div class="card-body" style="overflow-x:auto;">
+        <table class="xtab" id="xtab-gov-constituency"></table>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Gov. Performance by Age Group</div><div class="card-sub">How each age group rates the county</div></div><span class="card-badge badge-gold">D1 × A4</span></div>
+      <div class="card-body" style="overflow-x:auto;">
+        <table class="xtab" id="xtab-perf-age"></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Gov. Performance by Gender</div></div><span class="card-badge badge-plum">D1 × A1</span></div>
+      <div class="card-body" style="overflow-x:auto;">
+        <table class="xtab" id="xtab-perf-gender"></table>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Transparency × Opinion Considered</div><div class="card-sub">Do transparency ratings predict civic alienation?</div></div><span class="card-badge badge-teal">C2 × B4</span></div>
+      <div class="card-body" style="overflow-x:auto;">
+        <table class="xtab" id="xtab-trans-opinion"></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Voter Registration by Constituency</div></div><span class="card-badge badge-slate">B1 × A2</span></div>
+      <div class="card-body" style="overflow-x:auto;">
+        <table class="xtab" id="xtab-voter-constituency"></table>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card span2">
+      <div class="card-head"><div><div class="card-title">Governor Pick by Performance Rating</div><div class="card-sub">Checks for partisan bias — supporters of each candidate tend to rate performance differently</div></div><span class="card-badge badge-signal">G1 × D1</span></div>
+      <div class="card-body" style="overflow-x:auto;">
+        <table class="xtab" id="xtab-gov-perf"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: QUALITATIVE ══════════ -->
+<div class="tab-content" id="tab-qualitative">
+  <div class="section-label">Qualitative Theme Analysis</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">B5 — Political Issues (Word Frequency)</div></div><span class="card-badge badge-signal">B5</span></div>
+      <div class="card-body"><div class="word-cloud" id="wc-issues"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G4 — Advice to Mbarire (Themes)</div></div><span class="card-badge badge-teal">G4</span></div>
+      <div class="card-body"><div class="word-cloud" id="wc-advice-mbarire"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G6 — Advice to Kivuti (Themes)</div></div><span class="card-badge badge-gold">G6</span></div>
+      <div class="card-body"><div class="word-cloud" id="wc-advice-kivuti"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G7 — General Comments (Themes)</div></div><span class="card-badge badge-slate">G7</span></div>
+      <div class="card-body"><div class="word-cloud" id="wc-comments"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">C5 — Leadership Changes Desired (Themes)</div></div><span class="card-badge badge-plum">C5</span></div>
+      <div class="card-body"><div class="word-cloud" id="wc-leadership"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">F5 — Investment Suggestions (Themes)</div></div><span class="card-badge badge-teal">F5</span></div>
+      <div class="card-body"><div class="word-cloud" id="wc-investment"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: REPORT ══════════ -->
+<div class="tab-content" id="tab-report">
+  <div class="report-wrap">
+    <div class="report-actions">
+      <button class="tbtn" onclick="window.print()">🖨️ Print</button>
+      <button class="tbtn" onclick="downloadReportPDF()">📄 Download PDF</button>
+      <button class="tbtn primary" onclick="exportExcelAnalysis()">⬇ Export Excel</button>
+    </div>
+    <div class="report-doc" id="reportDoc">
+
+      <!-- COVER -->
+      <div class="r-cover">
+        <div class="r-logo">📊</div>
+        <h1>Embu County Political Survey</h1>
+        <div class="r-subtitle">Comprehensive Analysis Report</div>
+        <div class="r-meta">
+          <span>Sample Size: <strong id="r-n">—</strong></span>
+          <span>Constituencies: <strong>4</strong></span>
+          <span>Generated: <strong id="r-date">—</strong></span>
+          <span>Filter: <strong id="r-filter-label">All Respondents</strong></span>
+        </div>
+      </div>
+
+      <!-- TABLE OF CONTENTS -->
+      <div class="r-toc">
+        <h3>Contents</h3>
+        <ol>
+          <li onclick="document.getElementById('rs-exec').scrollIntoView({behavior:'smooth'})">Executive Summary</li>
+          <li onclick="document.getElementById('rs-demo').scrollIntoView({behavior:'smooth'})">Respondent Demographics</li>
+          <li onclick="document.getElementById('rs-pol').scrollIntoView({behavior:'smooth'})">Political Participation</li>
+          <li onclick="document.getElementById('rs-gov').scrollIntoView({behavior:'smooth'})">Governance &amp; Transparency</li>
+          <li onclick="document.getElementById('rs-svc').scrollIntoView({behavior:'smooth'})">Service Delivery Ratings</li>
+          <li onclick="document.getElementById('rs-eco').scrollIntoView({behavior:'smooth'})">Economic &amp; Sectoral Issues</li>
+          <li onclick="document.getElementById('rs-sent').scrollIntoView({behavior:'smooth'})">Political Sentiment</li>
+          <li onclick="document.getElementById('rs-cross').scrollIntoView({behavior:'smooth'})">Cross-Tabulation Findings</li>
+          <li onclick="document.getElementById('rs-qual').scrollIntoView({behavior:'smooth'})">Qualitative Themes</li>
+          <li onclick="document.getElementById('rs-rec').scrollIntoView({behavior:'smooth'})">Recommendations</li>
+        </ol>
+      </div>
+
+      <!-- SECTION 1: EXECUTIVE SUMMARY -->
+      <div class="r-section" id="rs-exec">
+        <h2>1. Executive Summary</h2>
+        <div id="r-exec-content"><p style="color:var(--muted2)">Loading…</p></div>
+      </div>
+      <hr class="r-divider">
+
+      <!-- SECTION 2: DEMOGRAPHICS -->
+      <div class="r-section" id="rs-demo">
+        <h2>2. Respondent Demographics (Section A)</h2>
+        <div id="r-demo-content"><p style="color:var(--muted2)">Loading…</p></div>
+      </div>
+      <hr class="r-divider">
+
+      <!-- SECTION 3: POLITICAL PARTICIPATION -->
+      <div class="r-section" id="rs-pol">
+        <h2>3. Political Participation &amp; Civic Engagement (Sections B &amp; C)</h2>
+        <div id="r-pol-content"><p style="color:var(--muted2)">Loading…</p></div>
+      </div>
+      <hr class="r-divider">
+
+      <!-- SECTION 4: GOVERNANCE -->
+      <div class="r-section" id="rs-gov">
+        <h2>4. Governance, Transparency &amp; Project Delivery (Sections C &amp; D)</h2>
+        <div id="r-gov-content"><p style="color:var(--muted2)">Loading…</p></div>
+      </div>
+      <hr class="r-divider">
+
+      <!-- SECTION 5: SERVICES -->
+      <div class="r-section" id="rs-svc">
+        <h2>5. Service Delivery Ratings (Section E)</h2>
+        <div id="r-svc-content"><p style="color:var(--muted2)">Loading…</p></div>
+      </div>
+      <hr class="r-divider">
+
+      <!-- SECTION 6: ECONOMICS -->
+      <div class="r-section" id="rs-eco">
+        <h2>6. Economic &amp; Sectoral Issues (Section F)</h2>
+        <div id="r-eco-content"><p style="color:var(--muted2)">Loading…</p></div>
+      </div>
+      <hr class="r-divider">
+
+      <!-- SECTION 7: SENTIMENT -->
+      <div class="r-section" id="rs-sent">
+        <h2>7. Political Sentiment &amp; Voting Intention (Section G)</h2>
+        <div id="r-sent-content"><p style="color:var(--muted2)">Loading…</p></div>
+      </div>
+      <hr class="r-divider">
+
+      <!-- SECTION 8: CROSS-TAB -->
+      <div class="r-section" id="rs-cross">
+        <h2>8. Cross-Tabulation Key Findings</h2>
+        <div id="r-cross-content"><p style="color:var(--muted2)">Loading…</p></div>
+      </div>
+      <hr class="r-divider">
+
+      <!-- SECTION 9: QUALITATIVE -->
+      <div class="r-section" id="rs-qual">
+        <h2>9. Qualitative Themes from Open-Ended Responses</h2>
+        <div id="r-qual-content"><p style="color:var(--muted2)">Loading…</p></div>
+      </div>
+      <hr class="r-divider">
+
+      <!-- SECTION 10: RECOMMENDATIONS -->
+      <div class="r-section" id="rs-rec">
+        <h2>10. Strategic Recommendations</h2>
+        <div id="r-rec-content"><p style="color:var(--muted2)">Loading…</p></div>
+      </div>
+
+    </div><!-- /report-doc -->
+  </div><!-- /report-wrap -->
+</div>
+
+</div><!-- /page -->
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:600;"></div>
+
+<script>
+/* ════════════════════════════════════
+   FIREBASE
+════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDyEkWZ5aoOKe84YvDKsngw38WbLj7KLkM",
+  authDomain: "survey-21a05.firebaseapp.com",
+  projectId: "survey-21a05",
+  storageBucket: "survey-21a05.firebasestorage.app",
+  messagingSenderId: "118264203441",
+  appId: "1:118264203441:web:80d591def71856f1013a90"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ════════════════════════════════════
+   STATE
+════════════════════════════════════ */
+let rawData = [];
+let data = [];  // filtered slice
+const chartInstances = {};
+const PALETTES = {
+  signal: ['#c8431a','#e8723f','#f0a07a','#f8cdb0','#fde8db'],
+  gov:    ['#1a7c6a','#c8431a','#c4942a','#6b3fa0'],
+  rating: ['#1a7c6a','#2d4a7a','#c4942a','#c8431a','#8b8278'],
+  bool:   ['#1a7c6a','#c8431a','#c4942a'],
+  age:    ['#c8431a','#c4942a','#1a7c6a','#2d4a7a','#6b3fa0','#8b8278','#b5afa8'],
+  multi:  ['#c8431a','#c4942a','#1a7c6a','#2d4a7a','#6b3fa0','#8b8278','#3d9fcf','#7dbf6e']
+};
+const SVC_FIELDS = [
+  {key:'svc_agriculture',  label:'Agriculture'},
+  {key:'svc_infrastructure',label:'Infrastructure'},
+  {key:'svc_education',    label:'Education'},
+  {key:'svc_health',       label:'Health'},
+  {key:'svc_youth',        label:'Youth'},
+  {key:'svc_women',        label:'Women'},
+  {key:'svc_govtAccess',   label:'Gov. Access'}
+];
+const RATING_SCORE = {Excellent:5,Good:4,Fair:3,Poor:2,'Very Poor':1,'Not Sure':1,'Not sure':1};
+const PERF_SCORE   = {Excellent:4,Good:3,Fair:2,Poor:1};
+const STOPWORDS = new Set(['the','and','to','of','a','in','is','for','are','that','it','be','with','on','we','our','have','has','need','should','more','needs','their','this','was','not','but','they','been','all','also','very','can','will','there','so','by','from','about','an','at','its','which','when','what','or','my','we','he','she','no','do','if','his','her','as','would','county','embu']);
+
+/* ════════════════════════════════════
+   LOGIN
+════════════════════════════════════ */
+document.getElementById('lp').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('lu').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogin() {
+  const u = document.getElementById('lu').value.trim();
+  const p = document.getElementById('lp').value;
+  if (u === 'admin' && p === 'embu2025') {
+    document.getElementById('loginWall').style.display = 'none';
+    fetchData();
+  } else {
+    document.getElementById('lerr').style.display = 'block';
+  }
+}
+
+/* ════════════════════════════════════
+   FETCH
+════════════════════════════════════ */
+async function fetchData() {
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  document.getElementById('loadMsg').textContent = 'Connecting to Firebase…';
+  try {
+    const snap = await db.collection('responses').orderBy('timestamp','desc').get();
+    rawData = snap.docs.map((doc,i) => ({ _id: doc.id, _idx: i+1, ...doc.data() }));
+    document.getElementById('loadMsg').textContent = `Processing ${rawData.length} responses…`;
+    await new Promise(r => setTimeout(r, 100));
+    data = [...rawData];
+    buildAll();
+    document.getElementById('tm-time').textContent = new Date().toLocaleTimeString();
+    toast(`✓ Loaded ${rawData.length} responses`, '#1a7c6a');
+  } catch(e) {
+    toast('Error: ' + e.message, '#c8431a');
+  }
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+async function refreshData() {
+  document.getElementById('refreshBtn').disabled = true;
+  await fetchData();
+  document.getElementById('refreshBtn').disabled = false;
+}
+
+/* ════════════════════════════════════
+   FILTERING
+════════════════════════════════════ */
+function getFiltered() {
+  const c = document.getElementById('gf-constituency').value;
+  const w = document.getElementById('gf-ward').value;
+  const g = document.getElementById('gf-gender').value;
+  const a = document.getElementById('gf-age').value;
+  const gov = document.getElementById('gf-governor').value;
+  return rawData.filter(d => {
+    if (c   && d.constituency !== c)   return false;
+    if (w   && d.ward         !== w)   return false;
+    if (g   && d.gender       !== g)   return false;
+    if (a   && d.age          !== a)   return false;
+    if (gov && d.governor     !== gov) return false;
+    return true;
+  });
+}
+
+function clearFilters() {
+  ['gf-constituency','gf-ward','gf-gender','gf-age','gf-governor'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  recomputeAll();
+}
+
+function recomputeAll() {
+  data = getFiltered();
+  document.getElementById('gf-n').textContent = data.length;
+  buildAll();
+}
+
+/* ════════════════════════════════════
+   HELPERS
+════════════════════════════════════ */
+function freq(arr, key) {
+  const m = {};
+  arr.forEach(d => { const v = d[key]; if(v) m[v] = (m[v]||0)+1; });
+  return m;
+}
+function freqMulti(arr, key) {
+  const m = {};
+  arr.forEach(d => {
+    const vs = d[key];
+    if (Array.isArray(vs)) vs.forEach(v => { if(v) m[v] = (m[v]||0)+1; });
+  });
+  return m;
+}
+function pct(n, total) { return total ? Math.round(n/total*100) : 0; }
+function sortDesc(obj) {
+  return Object.entries(obj).sort((a,b) => b[1]-a[1]);
+}
+function meanScore(arr, key, scoreMap) {
+  const vals = arr.map(d => scoreMap[d[key]]).filter(v => v !== undefined);
+  if (!vals.length) return 0;
+  return (vals.reduce((a,b)=>a+b,0)/vals.length);
+}
+
+function mkChart(id, cfg) {
+  if (chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  chartInstances[id] = new Chart(ctx, cfg);
+}
+
+function hbar(containerId, entries, total, colorClass='fill-signal', maxShow=10) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!entries.length) { el.innerHTML = '<div class="no-data">No data</div>'; return; }
+  el.innerHTML = entries.slice(0, maxShow).map(([label, n]) => `
+    <div class="hbar-item">
+      <div class="hbar-meta">
+        <span class="hbar-label">${esc(label)}</span>
+        <span class="hbar-vals">
+          <span class="hbar-pct">${pct(n,total)}%</span>
+          <span class="hbar-n">(${n})</span>
+        </span>
+      </div>
+      <div class="hbar-track"><div class="hbar-fill ${colorClass}" style="width:${pct(n,total)}%"></div></div>
+    </div>`).join('');
+}
+
+const esc = s => s ? String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
+
+/* ════════════════════════════════════
+   BUILD ALL
+════════════════════════════════════ */
+function buildAll() {
+  const n = data.length;
+  document.getElementById('gf-n').textContent = n;
+
+  // Hero stats
+  const gf = freq(data,'gender');
+  const govF = freq(data,'governor');
+  const totalRaw = rawData.length;
+  document.getElementById('hs-total').textContent = totalRaw;
+  document.getElementById('hs-today').textContent = rawData.filter(d=>{
+    const ts=d.timestamp?.toDate?d.timestamp.toDate():null;
+    return ts&&ts.toDateString()===new Date().toDateString();
+  }).length + ' today';
+  document.getElementById('tm-n').textContent = n;
+  document.getElementById('tm-res').textContent = new Set(rawData.map(d=>d.researcherName).filter(Boolean)).size;
+
+  const fCount = rawData.filter(d=>d.gender==='Female').length;
+  const mCount = rawData.filter(d=>d.gender==='Male').length;
+  document.getElementById('hs-female').textContent = fCount;
+  document.getElementById('hs-female-p').textContent = pct(fCount,totalRaw)+'%';
+  document.getElementById('hs-male').textContent   = mCount;
+  document.getElementById('hs-male-p').textContent = pct(mCount,totalRaw)+'%';
+  const vCount = rawData.filter(d=>d.voter==='Yes').length;
+  document.getElementById('hs-voters').textContent   = vCount;
+  document.getElementById('hs-voters-p').textContent = pct(vCount,totalRaw)+'%';
+  const mb = rawData.filter(d=>d.governor==='Cecily Mbarire').length;
+  const ki = rawData.filter(d=>d.governor==='Lenny Kivuti').length;
+  document.getElementById('hs-mbarire').textContent   = mb;
+  document.getElementById('hs-mbarire-p').textContent = pct(mb,totalRaw)+'%';
+  document.getElementById('hs-kivuti').textContent    = ki;
+  document.getElementById('hs-kivuti-p').textContent  = pct(ki,totalRaw)+'%';
+  const gpsCount = rawData.filter(d=>d.gps?.lat).length;
+  document.getElementById('hs-gps').textContent   = gpsCount;
+  document.getElementById('hs-gps-p').textContent = pct(gpsCount,totalRaw)+'%';
+  document.getElementById('hs-researchers').textContent = new Set(rawData.map(d=>d.researcherName).filter(Boolean)).size;
+
+  // Build tabs
+  buildOverview();
+  buildDemographics();
+  buildPolitical();
+  buildGovernance();
+  buildServices();
+  buildEconomics();
+  buildSentiment();
+  buildCrosstab();
+  buildQualitative();
+  buildInsight();
+  // Refresh report if it's currently visible
+  if (document.getElementById('tab-report').classList.contains('active')) buildReport();
+}
+
+/* ── OVERVIEW ── */
+function buildOverview() {
+  const n = data.length;
+  // Gender donut
+  const gf = freq(data,'gender');
+  const gLabels = Object.keys(gf);
+  const gVals   = Object.values(gf);
+  document.getElementById('donut-gender-n').textContent = n;
+  mkChart('ch-gender', {
+    type:'doughnut',
+    data:{labels:gLabels,datasets:[{data:gVals,backgroundColor:['#c8431a','#2d4a7a','#8b8278'],borderWidth:2,borderColor:'#fff'}]},
+    options:{cutout:'68%',plugins:{legend:{display:false}},animation:{animateRotate:true}}
+  });
+  document.getElementById('legend-gender').innerHTML = gLabels.map((l,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${['#c8431a','#2d4a7a','#8b8278'][i]}"></div>${esc(l)}: <strong>${pct(gVals[i],n)}%</strong></div>`).join('');
+
+  // Age bar
+  const ageOrder = ['18-27','28-37','38-47','48-57','58-67','68-77','Over 78'];
+  const af = freq(data,'age');
+  mkChart('ch-age', {
+    type:'bar',
+    data:{labels:ageOrder,datasets:[{data:ageOrder.map(k=>af[k]||0),backgroundColor:PALETTES.age,borderRadius:4,borderSkipped:false}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#f0ece6'}}},animation:{duration:800}}
+  });
+
+  // Constituency hbar
+  const cf = freq(data,'constituency');
+  hbar('hbar-constituency', sortDesc(cf), n, 'fill-teal', 6);
+
+  // Governor donut overview
+  const gvf = freq(data,'governor');
+  const gvLabels = ['Cecily Mbarire','Lenny Kivuti','A new face','Not yet decided'];
+  const gvVals   = gvLabels.map(k=>gvf[k]||0);
+  mkChart('ch-governor-ov',{
+    type:'doughnut',
+    data:{labels:gvLabels,datasets:[{data:gvVals,backgroundColor:PALETTES.gov,borderWidth:2,borderColor:'#fff'}]},
+    options:{cutout:'68%',plugins:{legend:{display:false}},animation:{animateRotate:true}}
+  });
+  document.getElementById('legend-governor-ov').innerHTML = gvLabels.map((l,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${PALETTES.gov[i]}"></div>${esc(l)}: <strong>${pct(gvVals[i],n)}%</strong></div>`).join('');
+
+  // Service score table
+  const scoreRows = SVC_FIELDS.map(sf => ({
+    label: sf.label,
+    score: meanScore(data, sf.key, RATING_SCORE)
+  })).sort((a,b)=>b.score-a.score);
+  document.getElementById('score-table').innerHTML = scoreRows.map(r => `
+    <tr>
+      <td>${esc(r.label)}</td>
+      <td>
+        <div class="score-bar-wrap">
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:${r.score/5*100}%"></div></div>
+          <span class="score-num">${r.score.toFixed(2)}/5</span>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  // Performance chart overview
+  buildPerfChart('ch-performance', data);
+}
+
+/* ── DEMOGRAPHICS ── */
+function buildDemographics() {
+  const n = data.length;
+  // Gender donut 2
+  const gf = freq(data,'gender');
+  const gLabels = Object.keys(gf); const gVals = Object.values(gf);
+  mkChart('ch-gender2',{
+    type:'doughnut',
+    data:{labels:gLabels,datasets:[{data:gVals,backgroundColor:['#c8431a','#2d4a7a','#8b8278'],borderWidth:2,borderColor:'#fff'}]},
+    options:{cutout:'65%',plugins:{legend:{display:false}},animation:{animateRotate:true}}
+  });
+  document.getElementById('legend-gender2').innerHTML = gLabels.map((l,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${['#c8431a','#2d4a7a','#8b8278'][i]}"></div>${esc(l)}: <strong>${pct(gVals[i],n)}%</strong></div>`).join('');
+
+  // Education hbar
+  const ef = freq(data,'education');
+  hbar('hbar-education', sortDesc(ef), n, 'fill-gold');
+
+  // Employment donut
+  const empf = freq(data,'employment');
+  const empLabels = Object.keys(empf); const empVals = Object.values(empf);
+  mkChart('ch-employment',{
+    type:'doughnut',
+    data:{labels:empLabels,datasets:[{data:empVals,backgroundColor:['#1a7c6a','#c8431a','#8b8278'],borderWidth:2,borderColor:'#fff'}]},
+    options:{cutout:'65%',plugins:{legend:{display:false}}}
+  });
+  document.getElementById('legend-employment').innerHTML = empLabels.map((l,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${['#1a7c6a','#c8431a','#8b8278'][i]}"></div>${esc(l)}: <strong>${pct(empVals[i],n)}%</strong></div>`).join('');
+
+  // Age bar 2
+  const ageOrder = ['18-27','28-37','38-47','48-57','58-67','68-77','Over 78'];
+  const af = freq(data,'age');
+  mkChart('ch-age2',{
+    type:'bar',
+    data:{labels:ageOrder,datasets:[{data:ageOrder.map(k=>af[k]||0),backgroundColor:PALETTES.age,borderRadius:4,borderSkipped:false}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#f0ece6'}}}}
+  });
+
+  // Constituency hbar2
+  const cf = freq(data,'constituency');
+  hbar('hbar-constituency2', sortDesc(cf), n, 'fill-teal');
+}
+
+/* ── POLITICAL ── */
+function buildPolitical() {
+  const n = data.length;
+  const vf = freq(data,'voter');
+  const yesN = vf['Yes']||0; const noN = vf['No']||0;
+  document.getElementById('kpi-voter-yes').textContent = pct(yesN,n)+'%';
+  document.getElementById('kpi-voter-no').textContent  = pct(noN,n)+'%';
+  hbar('hbar-voter', [['Registered',yesN],['Not Registered',noN]], n, 'fill-teal');
+
+  const ef = freq(data,'engage');
+  const engOrder = ['Frequently','Occasionally','Rarely','Never'];
+  hbar('hbar-engage', engOrder.map(k=>[k,ef[k]||0]).sort((a,b)=>b[1]-a[1]), n, 'fill-signal');
+
+  const of = freq(data,'opinion');
+  mkChart('ch-opinion',{
+    type:'bar',
+    data:{labels:Object.keys(of),datasets:[{data:Object.values(of),backgroundColor:['#1a7c6a','#c8431a','#c4942a'],borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'#f0ece6'}},y:{grid:{display:false}}}}
+  });
+
+  const pf = freq(data,'policyAware');
+  mkChart('ch-policy',{
+    type:'bar',
+    data:{labels:Object.keys(pf),datasets:[{data:Object.values(pf),backgroundColor:['#1a7c6a','#c8431a','#c4942a'],borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'#f0ece6'}},y:{grid:{display:false}}}}
+  });
+
+  const mf = freqMulti(data,'motivation');
+  hbar('hbar-motivation', sortDesc(mf), n, 'fill-signal');
+
+  const ndf = freqMulti(data,'notDelivered');
+  hbar('hbar-notdelivered', sortDesc(ndf), n, 'fill-gold');
+
+  const isf = freqMulti(data,'infoSources');
+  hbar('hbar-infosources', sortDesc(isf), n, 'fill-plum');
+
+  const tf = freq(data,'transparency');
+  const tOrder = ['Excellent','Good','Fair','Poor'];
+  mkChart('ch-transparency',{
+    type:'bar',
+    data:{labels:tOrder,datasets:[{data:tOrder.map(k=>tf[k]||0),backgroundColor:PALETTES.rating,borderRadius:4,borderSkipped:false}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#f0ece6'}}}}
+  });
+}
+
+/* ── GOVERNANCE ── */
+function buildGovernance() {
+  const n = data.length;
+  buildPerfChart('ch-performance2', data, true);
+
+  const bf = freq(data,'bias');
+  const bLabels = Object.keys(bf); const bVals = Object.values(bf);
+  mkChart('ch-bias',{
+    type:'doughnut',
+    data:{labels:bLabels,datasets:[{data:bVals,backgroundColor:['#c8431a','#1a7c6a','#c4942a'],borderWidth:2,borderColor:'#fff'}]},
+    options:{cutout:'65%',plugins:{legend:{display:false}}}
+  });
+  document.getElementById('legend-bias').innerHTML = bLabels.map((l,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${['#c8431a','#1a7c6a','#c4942a'][i]}"></div>${esc(l)}: <strong>${pct(bVals[i],n)}%</strong></div>`).join('');
+
+  // D6 priority weighted score
+  const priorityMap = {};
+  data.forEach(d => {
+    const text = d.needs || '';
+    const lines = text.split('\n').map(l=>l.replace(/^\d+[\.\)]\s*/,'').trim()).filter(Boolean);
+    lines.forEach((line, idx) => {
+      const score = Math.max(5 - idx, 1);
+      const theme = categorizeNeed(line);
+      priorityMap[theme] = (priorityMap[theme]||0) + score;
+    });
+  });
+  const sorted = Object.entries(priorityMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxScore = sorted[0]?.[1] || 1;
+  document.getElementById('priority-list-d6').innerHTML = sorted.map(([label,score],i) => `
+    <div class="priority-row">
+      <div class="priority-rank ${i===0?'r1':i===1?'r2':i===2?'r3':''}">${i+1}</div>
+      <div class="priority-text">${esc(label)}</div>
+      <div class="priority-bar-track"><div class="priority-bar-fill" style="width:${score/maxScore*100}%"></div></div>
+      <div class="priority-score">${score} pts</div>
+    </div>`).join('');
+}
+
+function buildPerfChart(id, arr, withLegend=false) {
+  const pf = freq(arr,'performance');
+  const pOrder = ['Excellent','Good','Fair','Poor'];
+  mkChart(id,{
+    type:'bar',
+    data:{labels:pOrder,datasets:[{data:pOrder.map(k=>pf[k]||0),backgroundColor:['#1a7c6a','#2d4a7a','#c4942a','#c8431a'],borderRadius:5,borderSkipped:false}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#f0ece6'}}}}
+  });
+  if (withLegend) {
+    const n = arr.length;
+    const el = document.getElementById('legend-performance2');
+    if (el) el.innerHTML = pOrder.map((l,i)=>
+      `<div class="legend-item"><div class="legend-dot" style="background:${['#1a7c6a','#2d4a7a','#c4942a','#c8431a'][i]}"></div>${l}: <strong>${pct(pf[l]||0,n)}%</strong></div>`).join('');
+  }
+}
+
+/* ── SERVICES ── */
+function buildServices() {
+  const n = data.length;
+  const svcData = SVC_FIELDS.map(sf => meanScore(data, sf.key, RATING_SCORE));
+  mkChart('ch-services-radar',{
+    type:'radar',
+    data:{
+      labels: SVC_FIELDS.map(sf=>sf.label),
+      datasets:[{
+        label:'Mean Score',
+        data: svcData,
+        borderColor:'#c8431a',
+        backgroundColor:'rgba(200,67,26,.15)',
+        pointBackgroundColor:'#c8431a',
+        pointRadius:5, borderWidth:2
+      }]
+    },
+    options:{
+      scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:10}},pointLabels:{font:{size:12,family:'DM Sans'}}}},
+      plugins:{legend:{display:false}}
+    }
+  });
+
+  const svcCards = [
+    {id:'svc-card-agri',  key:'svc_agriculture',  label:'Agriculture',   badge:'badge-teal'},
+    {id:'svc-card-infra', key:'svc_infrastructure',label:'Infrastructure',badge:'badge-slate'},
+    {id:'svc-card-edu',   key:'svc_education',     label:'Education',     badge:'badge-gold'},
+    {id:'svc-card-health',key:'svc_health',        label:'Health',        badge:'badge-signal'},
+    {id:'svc-card-youth', key:'svc_youth',         label:'Youth',         badge:'badge-plum'},
+    {id:'svc-card-women', key:'svc_women',         label:'Women',         badge:'badge-teal'},
+    {id:'svc-card-govt',  key:'svc_govtAccess',    label:'Gov. Access',   badge:'badge-slate'},
+  ];
+  const ratingOrder = ['Excellent','Good','Fair','Poor','Not Sure'];
+  svcCards.forEach(sc => {
+    const el = document.getElementById(sc.id);
+    if (!el) return;
+    const rf = freq(data, sc.key);
+    const mean = meanScore(data, sc.key, RATING_SCORE);
+    const mode = ratingOrder.find(r=>(rf[r]||0)===Math.max(...ratingOrder.map(r=>rf[r]||0))) || '—';
+    const cid = 'ch-'+sc.id;
+    el.innerHTML = `
+      <div class="card-head"><div><div class="card-title">${sc.label}</div><div class="card-sub">Mean: ${mean.toFixed(2)} / Mode: ${mode}</div></div><span class="card-badge ${sc.badge}">E</span></div>
+      <div class="card-body">
+        <div class="chart-wrap short"><canvas id="${cid}"></canvas></div>
+      </div>`;
+    mkChart(cid,{
+      type:'bar',
+      data:{labels:ratingOrder,datasets:[{data:ratingOrder.map(k=>rf[k]||0),backgroundColor:PALETTES.rating,borderRadius:3,borderSkipped:false}]},
+      options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{beginAtZero:true,grid:{color:'#f0ece6'}}}}
+    });
+  });
+}
+
+/* ── ECONOMICS ── */
+function buildEconomics() {
+  const n = data.length;
+  hbar('hbar-farming',       sortDesc(freqMulti(data,'farmingChallenges')), n, 'fill-teal');
+  hbar('hbar-infra-needed',  sortDesc(freqMulti(data,'infraNeeded')),       n, 'fill-slate');
+  hbar('hbar-sme',           sortDesc(freqMulti(data,'smeObstacles')),      n, 'fill-gold');
+  hbar('hbar-health-challenges', sortDesc(freqMulti(data,'healthChallenges')), n, 'fill-signal');
+  hbar('hbar-edu-concerns',  sortDesc(freqMulti(data,'eduConcerns')),       n, 'fill-plum');
+
+  const irf = freq(data,'infraRating');
+  const irOrder = ['Very Poor','Poor','Average','Good'];
+  mkChart('ch-infra-rating',{
+    type:'bar',
+    data:{labels:irOrder,datasets:[{data:irOrder.map(k=>irf[k]||0),backgroundColor:['#c8431a','#e8723f','#c4942a','#1a7c6a'],borderRadius:4,borderSkipped:false}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#f0ece6'}}}}
+  });
+
+  const erf = freq(data,'eduRating');
+  mkChart('ch-edu-rating',{
+    type:'bar',
+    data:{labels:irOrder,datasets:[{data:irOrder.map(k=>erf[k]||0),backgroundColor:['#c8431a','#e8723f','#c4942a','#1a7c6a'],borderRadius:4,borderSkipped:false}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#f0ece6'}}}}
+  });
+}
+
+/* ── SENTIMENT ── */
+function buildSentiment() {
+  const n = data.length;
+  const gvf = freq(data,'governor');
+  const gvLabels = ['Cecily Mbarire','Lenny Kivuti','A new face','Not yet decided'];
+  const gvVals   = gvLabels.map(k=>gvf[k]||0);
+  mkChart('ch-governor',{
+    type:'doughnut',
+    data:{labels:gvLabels,datasets:[{data:gvVals,backgroundColor:PALETTES.gov,borderWidth:3,borderColor:'#fff'}]},
+    options:{cutout:'60%',plugins:{legend:{display:false}},animation:{animateRotate:true}}
+  });
+  document.getElementById('legend-governor').innerHTML = gvLabels.map((l,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${PALETTES.gov[i]}"></div>${esc(l)}: <strong>${pct(gvVals[i],n)}%</strong> (${gvVals[i]})</div>`).join('');
+
+  hbar('hbar-vote-reasons', sortDesc(freqMulti(data,'voteReasons')),     n, 'fill-teal');
+  hbar('hbar-anti-mbarire', sortDesc(freqMulti(data,'notMbarireReasons')),n, 'fill-signal');
+  hbar('hbar-anti-kivuti',  sortDesc(freqMulti(data,'notKivutiReasons')), n, 'fill-gold');
+}
+
+/* ── CROSS-TAB ── */
+function buildCrosstab() {
+  const n = data.length;
+  const constits = ['Manyatta','Runyenjes','Mbeere North','Mbeere South'];
+  const govCands = ['Cecily Mbarire','Lenny Kivuti','A new face','Not yet decided'];
+  const ageGroups = ['18-27','28-37','38-47','48-57','58-67'];
+  const perfRatings = ['Excellent','Good','Fair','Poor'];
+
+  // G1 × A2
+  let html = `<thead><tr><th>Constituency</th>${govCands.map(g=>`<th>${esc(g)}</th>`).join('')}<th>N</th></tr></thead><tbody>`;
+  constits.forEach(c => {
+    const sub = data.filter(d=>d.constituency===c);
+    if (!sub.length) return;
+    html += `<tr><td>${c}</td>${govCands.map(g=>{
+      const cnt=sub.filter(d=>d.governor===g).length;
+      return `<td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="width:${pct(cnt,sub.length)}%"></div></div>${pct(cnt,sub.length)}%</div></td>`;
+    }).join('')}<td style="color:var(--muted2);font-family:var(--font-m)">${sub.length}</td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('xtab-gov-constituency').innerHTML = html;
+
+  // D1 × A4
+  html = `<thead><tr><th>Age Group</th>${perfRatings.map(p=>`<th>${p}</th>`).join('')}<th>Mean</th><th>N</th></tr></thead><tbody>`;
+  ageGroups.forEach(ag => {
+    const sub = data.filter(d=>d.age===ag);
+    if (!sub.length) return;
+    const mean = meanScore(sub,'performance',PERF_SCORE);
+    html += `<tr><td>${ag}</td>${perfRatings.map(p=>{
+      const cnt=sub.filter(d=>d.performance===p).length;
+      return `<td>${pct(cnt,sub.length)}%</td>`;
+    }).join('')}<td style="font-family:var(--font-m);color:var(--teal)">${mean.toFixed(2)}</td><td style="color:var(--muted2);font-family:var(--font-m)">${sub.length}</td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('xtab-perf-age').innerHTML = html;
+
+  // D1 × A1
+  html = `<thead><tr><th>Gender</th>${perfRatings.map(p=>`<th>${p}</th>`).join('')}<th>Mean</th></tr></thead><tbody>`;
+  ['Male','Female'].forEach(g => {
+    const sub = data.filter(d=>d.gender===g);
+    if (!sub.length) return;
+    const mean = meanScore(sub,'performance',PERF_SCORE);
+    html += `<tr><td>${g}</td>${perfRatings.map(p=>{
+      const cnt=sub.filter(d=>d.performance===p).length;
+      return `<td>${pct(cnt,sub.length)}%</td>`;
+    }).join('')}<td style="font-family:var(--font-m);color:var(--teal)">${mean.toFixed(2)}</td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('xtab-perf-gender').innerHTML = html;
+
+  // C2 × B4
+  const transVals = ['Excellent','Good','Fair','Poor'];
+  const opinVals  = ['Yes','No','Not sure'];
+  html = `<thead><tr><th>Transparency</th>${opinVals.map(v=>`<th>Opinion: ${v}</th>`).join('')}<th>N</th></tr></thead><tbody>`;
+  transVals.forEach(tv => {
+    const sub = data.filter(d=>d.transparency===tv);
+    if (!sub.length) return;
+    html += `<tr><td>${tv}</td>${opinVals.map(ov=>{
+      const cnt=sub.filter(d=>d.opinion===ov).length;
+      return `<td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="width:${pct(cnt,sub.length)}%;background:var(--teal)"></div></div>${pct(cnt,sub.length)}%</div></td>`;
+    }).join('')}<td style="color:var(--muted2);font-family:var(--font-m)">${sub.length}</td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('xtab-trans-opinion').innerHTML = html;
+
+  // B1 × A2
+  html = `<thead><tr><th>Constituency</th><th>Registered %</th><th>Not Registered %</th><th>N</th></tr></thead><tbody>`;
+  constits.forEach(c => {
+    const sub = data.filter(d=>d.constituency===c);
+    if (!sub.length) return;
+    const yes = sub.filter(d=>d.voter==='Yes').length;
+    const no  = sub.filter(d=>d.voter==='No').length;
+    html += `<tr><td>${c}</td>
+      <td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="width:${pct(yes,sub.length)}%;background:var(--teal)"></div></div>${pct(yes,sub.length)}%</div></td>
+      <td>${pct(no,sub.length)}%</td>
+      <td style="color:var(--muted2);font-family:var(--font-m)">${sub.length}</td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('xtab-voter-constituency').innerHTML = html;
+
+  // G1 × D1
+  html = `<thead><tr><th>Governor Pick</th>${perfRatings.map(p=>`<th>${p}</th>`).join('')}<th>Mean Score</th><th>N</th></tr></thead><tbody>`;
+  govCands.forEach(g => {
+    const sub = data.filter(d=>d.governor===g);
+    if (!sub.length) return;
+    const mean = meanScore(sub,'performance',PERF_SCORE);
+    html += `<tr><td>${esc(g)}</td>${perfRatings.map(p=>{
+      const cnt=sub.filter(d=>d.performance===p).length;
+      return `<td>${pct(cnt,sub.length)}%</td>`;
+    }).join('')}<td style="font-family:var(--font-m);color:var(--teal);font-weight:600">${mean.toFixed(2)}</td>
+    <td style="color:var(--muted2);font-family:var(--font-m)">${sub.length}</td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('xtab-gov-perf').innerHTML = html;
+}
+
+/* ── QUALITATIVE / WORD FREQ ── */
+function buildQualitative() {
+  wordCloud('wc-issues',           data.map(d=>d.issues).filter(Boolean));
+  wordCloud('wc-advice-mbarire',   data.map(d=>d.adviceMbarire).filter(Boolean));
+  wordCloud('wc-advice-kivuti',    data.map(d=>d.adviceKivuti).filter(Boolean));
+  wordCloud('wc-comments',         data.map(d=>d.comments).filter(Boolean));
+  wordCloud('wc-leadership',       data.map(d=>d.leadershipChanges).filter(Boolean));
+  wordCloud('wc-investment',       data.map(d=>d.investment).filter(Boolean));
+}
+
+function wordCloud(containerId, texts) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!texts.length) { el.innerHTML = '<div class="no-data">No text responses yet</div>'; return; }
+  const wf = {};
+  texts.join(' ').toLowerCase()
+    .replace(/[^a-z\s]/g,' ').split(/\s+/)
+    .filter(w => w.length > 2 && !STOPWORDS.has(w))
+    .forEach(w => { wf[w] = (wf[w]||0)+1; });
+  const sorted = Object.entries(wf).sort((a,b)=>b[1]-a[1]).slice(0,40);
+  const max = sorted[0]?.[1] || 1;
+  const colors = ['#c8431a','#c4942a','#1a7c6a','#2d4a7a','#6b3fa0','#8b8278'];
+  el.innerHTML = sorted.map(([w,cnt],i) => {
+    const size = 11 + Math.round((cnt/max)*18);
+    const opacity = 0.5 + (cnt/max)*0.5;
+    const color = colors[i % colors.length];
+    return `<span class="word-pill" style="font-size:${size}px;background:${color}18;color:${color};opacity:${opacity};border:1px solid ${color}40">${esc(w)} <sup style="font-size:9px">${cnt}</sup></span>`;
+  }).join('');
+}
+
+/* ── INSIGHT ENGINE ── */
+function buildInsight() {
+  const n = data.length;
+  if (!n) return;
+  const govF = freq(data,'governor');
+  const perfF = freq(data,'performance');
+  const topGov = Object.entries(govF).sort((a,b)=>b[1]-a[1])[0];
+  const topPerf = Object.entries(perfF).sort((a,b)=>b[1]-a[1])[0];
+  const voterPct = pct(data.filter(d=>d.voter==='Yes').length, n);
+  const antiMb = sortDesc(freqMulti(data,'notMbarireReasons'));
+  const antiKv = sortDesc(freqMulti(data,'notKivutiReasons'));
+  const topAntiMb = antiMb[0]?.[0] || '—';
+  const topAntiKv = antiKv[0]?.[0] || '—';
+  const lowSvc = SVC_FIELDS.map(sf=>({label:sf.label,score:meanScore(data,sf.key,RATING_SCORE)})).sort((a,b)=>a.score-b.score)[0];
+  const insights = [
+    `Of <strong>${n} respondents</strong>, <strong>${pct(govF['Cecily Mbarire']||0,n)}%</strong> intend to vote for Cecily Mbarire vs <strong>${pct(govF['Lenny Kivuti']||0,n)}%</strong> for Lenny Kivuti. <strong>${voterPct}%</strong> are registered voters.`,
+    `The county government's performance is rated <strong>${topPerf?.[0]||'—'}</strong> by the largest group (${pct(topPerf?.[1]||0,n)}%). Lowest-scoring service: <strong>${lowSvc?.label||'—'}</strong> at <strong>${lowSvc?.score.toFixed(2)||'—'}/5</strong>.`,
+    `Primary liability for Mbarire: <strong>"${topAntiMb}"</strong>. Primary liability for Kivuti: <strong>"${topAntiKv}"</strong>. These represent key campaign vulnerabilities.`
+  ];
+  document.getElementById('insight-text').innerHTML = insights[Math.floor(Date.now()/10000)%insights.length];
+}
+
+/* ── NEED CATEGORIZER ── */
+function categorizeNeed(text) {
+  const t = text.toLowerCase();
+  if (/road|tarmac|bridge|transport/.test(t)) return 'Roads & Transport';
+  if (/water|irrigation|dam/.test(t)) return 'Water & Irrigation';
+  if (/health|hospital|clinic|medicine/.test(t)) return 'Healthcare';
+  if (/school|education|teacher|learn/.test(t)) return 'Education';
+  if (/job|employ|youth|business|sme/.test(t)) return 'Employment & Youth';
+  if (/electric|power|light/.test(t)) return 'Electricity';
+  if (/farm|agri|livestock|crop/.test(t)) return 'Agriculture';
+  if (/corrupt|account|transparen/.test(t)) return 'Accountability';
+  if (/market|trade|invest/.test(t)) return 'Markets & Trade';
+  if (/security|police|safe/.test(t)) return 'Security';
+  if (/internet|connect|network/.test(t)) return 'Internet Connectivity';
+  return text.length > 40 ? text.slice(0,38)+'…' : text || 'Other';
+}
+
+/* ── TABS ── */
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'report') buildReport();
+}
+
+/* ════════════════════════════════════
+   ANALYSIS REPORT BUILDER
+════════════════════════════════════ */
+function buildReport() {
+  const n = data.length;
+  if (!n) { toast('No data loaded yet','#c8431a'); return; }
+
+  document.getElementById('r-n').textContent    = n.toLocaleString();
+  document.getElementById('r-date').textContent  = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  // filter label
+  const c = document.getElementById('gf-constituency').value;
+  const w = document.getElementById('gf-ward').value;
+  const g = document.getElementById('gf-gender').value;
+  const ag = document.getElementById('gf-age').value;
+  const gv = document.getElementById('gf-governor').value;
+  const parts = [c,w,g,ag,gv].filter(Boolean);
+  document.getElementById('r-filter-label').textContent = parts.length ? parts.join(' · ') : 'All Respondents';
+
+  // ─ Pre-compute everything ─
+  const gF      = freq(data,'gender');
+  const ageF    = freq(data,'age');
+  const conF    = freq(data,'constituency');
+  const eduF    = freq(data,'education');
+  const empF    = freq(data,'employment');
+  const voterF  = freq(data,'voter');
+  const engF    = freq(data,'engage');
+  const opF     = freq(data,'opinion');
+  const polF    = freq(data,'policyAware');
+  const transF  = freq(data,'transparency');
+  const biasF   = freq(data,'bias');
+  const perfF   = freq(data,'performance');
+  const govF    = freq(data,'governor');
+  const infraRF = freq(data,'infraRating');
+  const eduRF   = freq(data,'eduRating');
+
+  const motF    = freqMulti(data,'motivation');
+  const ndF     = freqMulti(data,'notDelivered');
+  const infoF   = freqMulti(data,'infoSources');
+  const vrF     = freqMulti(data,'voteReasons');
+  const antiMbF = freqMulti(data,'notMbarireReasons');
+  const antiKvF = freqMulti(data,'notKivutiReasons');
+  const farmF   = freqMulti(data,'farmingChallenges');
+  const infraNF = freqMulti(data,'infraNeeded');
+  const smeF    = freqMulti(data,'smeObstacles');
+  const hcF     = freqMulti(data,'healthChallenges');
+  const ecF     = freqMulti(data,'eduConcerns');
+
+  const svcMeans = SVC_FIELDS.map(sf=>({label:sf.label, score:meanScore(data,sf.key,RATING_SCORE)}));
+  const svcSorted = [...svcMeans].sort((a,b)=>b.score-a.score);
+  const bestSvc = svcSorted[0]; const worstSvc = svcSorted[svcSorted.length-1];
+  const perfMean = meanScore(data,'performance',PERF_SCORE);
+
+  const ageOrder = ['18-27','28-37','38-47','48-57','58-67','68-77','Over 78'];
+  const constits = ['Manyatta','Runyenjes','Mbeere North','Mbeere South'];
+  const ratingOrder = ['Excellent','Good','Fair','Poor'];
+  const govCands = ['Cecily Mbarire','Lenny Kivuti','A new face','Not yet decided'];
+
+  const top = (obj,k=1) => sortDesc(obj).slice(0,k).map(([l,v])=>`${l} (${pct(v,n)}%)`).join(', ');
+  const topRaw = (obj,k=1) => sortDesc(obj).slice(0,k).map(([l])=>l).join(', ');
+  const topN = (obj,k) => sortDesc(obj).slice(0,k);
+
+  function freqTable(obj, total, label='Response') {
+    const rows = sortDesc(obj);
+    return `<table class="r-table">
+      <thead><tr><th>${label}</th><th>Count (n)</th><th>Percentage</th></tr></thead>
+      <tbody>${rows.map(([l,v])=>`<tr><td>${esc(l)}</td><td class="num">${v}</td><td class="num">${pct(v,total)}%</td></tr>`).join('')}</tbody>
+    </table>`;
+  }
+  function ratingTableByConst(key, scoreMap) {
+    let html = `<table class="r-table"><thead><tr><th>Constituency</th>`;
+    ratingOrder.forEach(r => html += `<th>${r}</th>`);
+    html += `<th>Mean Score</th><th>N</th></tr></thead><tbody>`;
+    constits.forEach(c => {
+      const sub = data.filter(d=>d.constituency===c);
+      if (!sub.length) return;
+      const m = meanScore(sub,key,scoreMap);
+      html += `<tr><td>${c}</td>${ratingOrder.map(r=>{
+        const cnt=sub.filter(d=>d[key]===r).length;
+        return `<td class="num">${pct(cnt,sub.length)}%</td>`;
+      }).join('')}<td class="num" style="color:var(--teal);font-weight:600">${m.toFixed(2)}</td><td class="num">${sub.length}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    return html;
+  }
+
+  // ── SECTION 1: EXECUTIVE SUMMARY ──
+  document.getElementById('r-exec-content').innerHTML = `
+    <div class="r-finding-box">
+      <h3>Key Findings at a Glance</h3>
+      <p>This report analyses <strong>${n.toLocaleString()} survey responses</strong> collected across Embu County's four constituencies: Manyatta, Runyenjes, Mbeere North, and Mbeere South.</p>
+      <p><strong>Demographics:</strong> ${pct(gF.Female||0,n)}% of respondents were Female, ${pct(gF.Male||0,n)}% Male. The dominant age group was <strong>${sortDesc(ageF)[0]?.[0]||'—'}</strong> (${pct(sortDesc(ageF)[0]?.[1]||0,n)}%). ${pct(voterF.Yes||0,n)}% are registered voters.</p>
+      <p><strong>Governance:</strong> The county government's overall performance is rated as <strong>${topRaw(perfF)}</strong> by the largest share (${pct(sortDesc(perfF)[0]?.[1]||0,n)}%). Mean performance score: <strong>${perfMean.toFixed(2)}/4.0</strong>. ${pct(biasF.Yes||0,n)}% of respondents report experiencing political favoritism.</p>
+      <p><strong>Service Delivery:</strong> Best-rated service: <strong>${bestSvc.label}</strong> (${bestSvc.score.toFixed(2)}/5). Worst-rated: <strong>${worstSvc.label}</strong> (${worstSvc.score.toFixed(2)}/5).</p>
+      <p><strong>Political Sentiment:</strong> Governor voting intention — <strong>Cecily Mbarire: ${pct(govF['Cecily Mbarire']||0,n)}%</strong>, Lenny Kivuti: ${pct(govF['Lenny Kivuti']||0,n)}%, A new face: ${pct(govF['A new face']||0,n)}%, Undecided: ${pct(govF['Not yet decided']||0,n)}%.</p>
+    </div>
+    <div class="r-badge-row">
+      <span class="r-badge rb-signal">N = ${n}</span>
+      <span class="r-badge rb-teal">Voters: ${pct(voterF.Yes||0,n)}%</span>
+      <span class="r-badge rb-gold">Perf Mean: ${perfMean.toFixed(2)}/4</span>
+      <span class="r-badge rb-slate">Mbarire: ${pct(govF['Cecily Mbarire']||0,n)}%</span>
+      <span class="r-badge rb-plum">Kivuti: ${pct(govF['Lenny Kivuti']||0,n)}%</span>
+    </div>`;
+
+  // ── SECTION 2: DEMOGRAPHICS ──
+  document.getElementById('r-demo-content').innerHTML = `
+    <h3>A1 — Gender Distribution</h3>
+    <p>Of the ${n} respondents, <strong>${gF.Female||0} (${pct(gF.Female||0,n)}%) were Female</strong> and <strong>${gF.Male||0} (${pct(gF.Male||0,n)}%) were Male</strong>. This distribution ${Math.abs((gF.Female||0)-(gF.Male||0)) < n*0.1 ? 'reflects a near-balanced sample, supporting representativeness across gender lines' : 'indicates a gender skew that should be considered when interpreting gendered sub-group results'}.</p>
+    ${freqTable(gF, n, 'Gender')}
+
+    <h3>A4 — Age Profile</h3>
+    <p>The largest age cohort is <strong>${sortDesc(ageF)[0]?.[0]||'—'}</strong> at ${pct(sortDesc(ageF)[0]?.[1]||0,n)}%, followed by ${sortDesc(ageF)[1]?.[0]||'—'} at ${pct(sortDesc(ageF)[1]?.[1]||0,n)}%. Respondents aged 18–37 collectively represent ${pct((ageF['18-27']||0)+(ageF['28-37']||0),n)}% of the sample, indicating ${(ageF['18-27']||0)+(ageF['28-37']||0) > n*0.4 ? 'strong youth representation' : 'moderate youth participation'}.</p>
+    ${freqTable(ageF, n, 'Age Group')}
+
+    <h3>A2 — Geographic Distribution by Constituency</h3>
+    ${freqTable(conF, n, 'Constituency')}
+
+    <h3>A5 — Education Level</h3>
+    <p>The most common education level is <strong>${topRaw(eduF)}</strong>. This has implications for communication strategy — materials and messaging should be calibrated to the dominant literacy level.</p>
+    ${freqTable(eduF, n, 'Education Level')}
+
+    <h3>A6 — Employment Status</h3>
+    ${freqTable(empF, n, 'Employment Status')}
+    ${pct(empF.Unemployed||0,n) > 30 ? `<div class="r-callout"><strong>Note:</strong> ${pct(empF.Unemployed||0,n)}% of respondents are unemployed, suggesting economic vulnerability is a central concern for a significant segment of the electorate.</div>` : ''}`;
+
+  // ── SECTION 3: POLITICAL PARTICIPATION ──
+  document.getElementById('r-pol-content').innerHTML = `
+    <h3>B1 — Voter Registration Rate</h3>
+    <p><strong>${pct(voterF.Yes||0,n)}% of respondents</strong> (${voterF.Yes||0} out of ${n}) are registered to vote. ${pct(voterF.No||0,n)}% are not registered, representing a potential voter mobilisation opportunity.</p>
+    ${freqTable(voterF, n, 'Registration Status')}
+    ${pct(voterF.No||0,n) > 20 ? `<div class="r-callout r-callout-gold"><strong>Opportunity:</strong> ${voterF.No||0} unregistered respondents represent a significant voter registration opportunity, particularly if concentrated in specific wards.</div>` : ''}
+
+    <h3>B2 — Frequency of Engagement with Leaders</h3>
+    <p>Only <strong>${pct(engF.Frequently||0,n)}% engage Frequently</strong> with elected leaders. A combined ${pct((engF.Rarely||0)+(engF.Never||0),n)}% engage Rarely or Never, pointing to a significant civic disengagement problem.</p>
+    ${freqTable(engF, n, 'Engagement Frequency')}
+
+    <h3>B3 — Motivation to Participate in Politics</h3>
+    <p>The top motivating factor is <strong>${topRaw(motF)}</strong>. Understanding these drivers is key to voter mobilisation messaging.</p>
+    ${freqTable(motF, n, 'Motivation Factor')}
+
+    <h3>B4 — Do Respondents Feel Their Opinions Are Considered?</h3>
+    <p><strong>${pct(opF.No||0,n)}% said No</strong> — their opinions are not considered by leaders. This civic alienation index is a critical indicator of political trust.</p>
+    ${freqTable(opF, n, 'Opinion Considered?')}
+    ${pct(opF.No||0,n) > 40 ? `<div class="r-callout"><strong>Alert:</strong> A majority feel their opinions are ignored. Candidates who position themselves as "listeners" have a strong narrative advantage.</div>` : ''}
+
+    <h3>B6 — Areas Where Government Has Not Delivered</h3>
+    <p>The top undelivered area cited is <strong>${topRaw(ndF)}</strong>. These represent the primary grounds for voter dissatisfaction.</p>
+    ${freqTable(ndF, n, 'Undelivered Area')}
+
+    <h3>B7 — Policy Awareness</h3>
+    ${freqTable(polF, n, 'Policy Aware?')}
+
+    <h3>C1 — Sources of Political Information</h3>
+    <p>The dominant information source is <strong>${topRaw(infoF)}</strong>. ${sortDesc(infoF).some(([l])=>/baraz|word|mouth/i.test(l)) ? 'High reliance on word-of-mouth and barazas suggests limited reach of formal government communication channels.' : 'This has direct implications for media strategy and campaign outreach.'}</p>
+    ${freqTable(infoF, n, 'Information Source')}
+
+    <h3>C2 — Transparency Rating of County Government</h3>
+    ${freqTable(transF, n, 'Transparency Rating')}`;
+
+  // ── SECTION 4: GOVERNANCE ──
+  document.getElementById('r-gov-content').innerHTML = `
+    <h3>D1 — Overall Government Performance Rating</h3>
+    <p>The mean performance score is <strong>${perfMean.toFixed(2)} out of 4.0</strong> (Excellent=4, Good=3, Fair=2, Poor=1). ${perfMean < 2.5 ? 'A mean below 2.5 indicates widespread dissatisfaction with the county government.' : perfMean < 3 ? 'The mean score suggests a mixed but leaning-negative assessment of government performance.' : 'The mean score reflects a broadly positive view of county government performance.'}</p>
+    ${freqTable(perfF, n, 'Performance Rating')}
+    <p>Performance rating by constituency:</p>
+    ${ratingTableByConst('performance', PERF_SCORE)}
+
+    <h3>C3 — Political Favoritism / Bias</h3>
+    <p><strong>${pct(biasF.Yes||0,n)}%</strong> of respondents report that the county government exhibits political favoritism in service or resource distribution.</p>
+    ${freqTable(biasF, n, 'Favoritism Reported')}
+    ${pct(biasF.Yes||0,n) > 40 ? `<div class="r-callout"><strong>Finding:</strong> Nearly half or more of respondents perceive political favoritism. This is a significant governance legitimacy concern.</div>` : ''}
+
+    <h3>D6 — Top Priority Needs (Weighted Ranking)</h3>
+    <p>Using a weighted scoring system (Rank 1 = 5 points, Rank 5 = 1 point), the community's most urgent priorities have been computed. The top three priorities represent the clearest mandate from the electorate.</p>
+    ${(()=>{
+      const pm={};
+      data.forEach(d=>{
+        const lines=(d.needs||'').split('\n').map(l=>l.replace(/^\d+[\.\)]\s*/,'').trim()).filter(Boolean);
+        lines.forEach((line,idx)=>{const score=Math.max(5-idx,1);const theme=categorizeNeed(line);pm[theme]=(pm[theme]||0)+score;});
+      });
+      const sorted=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      return `<table class="r-table"><thead><tr><th>Rank</th><th>Priority Need</th><th>Weighted Score</th></tr></thead><tbody>
+        ${sorted.map(([l,s],i)=>`<tr><td class="num" style="font-weight:700">#${i+1}</td><td>${esc(l)}</td><td class="num">${s}</td></tr>`).join('')}
+      </tbody></table>`;
+    })()}`;
+
+  // ── SECTION 5: SERVICES ──
+  document.getElementById('r-svc-content').innerHTML = `
+    <p>Service delivery was rated on a 5-point scale (Not Sure=1, Poor=2, Fair=3, Good=4, Excellent=5). The table below presents mean scores for each service area alongside the modal response.</p>
+    <table class="r-table">
+      <thead><tr><th>Service Area</th><th>Mean Score (/5)</th><th>Mode (Most Common Rating)</th><th>% Rating Poor or Below</th></tr></thead>
+      <tbody>
+      ${SVC_FIELDS.map(sf=>{
+        const m = meanScore(data,sf.key,RATING_SCORE);
+        const rf = freq(data,sf.key);
+        const mode = ['Excellent','Good','Fair','Poor','Not Sure'].find(r=>(rf[r]||0)===Math.max(...['Excellent','Good','Fair','Poor','Not Sure'].map(r=>rf[r]||0)))||'—';
+        const pctPoor = pct((rf.Poor||0)+(rf['Very Poor']||0),n);
+        return `<tr>
+          <td>${sf.label}</td>
+          <td class="num" style="color:${m>=4?'var(--teal)':m>=3?'var(--gold)':'var(--signal)'};font-weight:600">${m.toFixed(2)}</td>
+          <td>${mode}</td>
+          <td class="num" style="color:${pctPoor>40?'var(--signal)':'inherit'}">${pctPoor}%</td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+    </table>
+    <div class="r-callout r-callout-teal"><strong>Best performer:</strong> ${bestSvc.label} scored ${bestSvc.score.toFixed(2)}/5. <strong>Weakest performer:</strong> ${worstSvc.label} scored ${worstSvc.score.toFixed(2)}/5 — this represents the highest-priority service delivery gap.</div>
+    ${SVC_FIELDS.map(sf=>{
+      const rf = freq(data,sf.key);
+      return `<h3>${sf.label}</h3>${freqTable(rf,n,'Rating')}`;
+    }).join('')}`;
+
+  // ── SECTION 6: ECONOMICS ──
+  document.getElementById('r-eco-content').innerHTML = `
+    <h3>F1 — Farming Challenges</h3>
+    <p>The top farming challenge cited is <strong>${topRaw(farmF)}</strong>. These inputs should directly inform agricultural budget allocation priorities.</p>
+    ${freqTable(farmF, n, 'Challenge')}
+
+    <h3>F2 — Infrastructure Rating</h3>
+    ${freqTable(infraRF, n, 'Rating')}
+
+    <h3>F3 — Infrastructure Needed</h3>
+    <p>The most demanded infrastructure type is <strong>${topRaw(infraNF)}</strong>.</p>
+    ${freqTable(infraNF, n, 'Infrastructure Type')}
+
+    <h3>F4 — SME Obstacles</h3>
+    <p>The primary obstacle for small businesses is <strong>${topRaw(smeF)}</strong>.</p>
+    ${freqTable(smeF, n, 'Obstacle')}
+
+    <h3>F6 — Healthcare Challenges</h3>
+    <p>The dominant healthcare challenge is <strong>${topRaw(hcF)}</strong>.</p>
+    ${freqTable(hcF, n, 'Challenge')}
+
+    <h3>F8 — Education Rating</h3>
+    ${freqTable(eduRF, n, 'Rating')}
+
+    <h3>F9 — Education Concerns</h3>
+    ${freqTable(ecF, n, 'Concern')}`;
+
+  // ── SECTION 7: SENTIMENT ──
+  document.getElementById('r-sent-content').innerHTML = `
+    <h3>G1 — Governor Voting Intention</h3>
+    <p>Among all respondents, <strong>Cecily Mbarire leads with ${pct(govF['Cecily Mbarire']||0,n)}%</strong> (${govF['Cecily Mbarire']||0} votes), followed by Lenny Kivuti at ${pct(govF['Lenny Kivuti']||0,n)}% (${govF['Lenny Kivuti']||0} votes). ${pct(govF['Not yet decided']||0,n)}% remain undecided — this undecided bloc is a critical target for both campaigns.</p>
+    ${freqTable(govF, n, 'Governor Preference')}
+    ${pct(govF['Not yet decided']||0,n) > 15 ? `<div class="r-callout r-callout-gold"><strong>Undecided Bloc:</strong> ${govF['Not yet decided']||0} respondents (${pct(govF['Not yet decided']||0,n)}%) are undecided. Winning this bloc is likely decisive — their top needs and service concerns should anchor campaign messaging.</div>` : ''}
+
+    <h3>G2 — Reasons for Voting (What Voters Value)</h3>
+    <p>The top vote-driving factor is <strong>${topRaw(vrF)}</strong>. This signals what the electorate prioritises when choosing a candidate.</p>
+    ${freqTable(vrF, n, 'Vote Reason')}
+
+    <h3>G3 — Reasons Against Cecily Mbarire</h3>
+    <p>The primary liability for Cecily Mbarire is <strong>"${topRaw(antiMbF)}"</strong> (cited by ${pct(sortDesc(antiMbF)[0]?.[1]||0,n)}%). This represents her most significant electoral vulnerability.</p>
+    ${freqTable(antiMbF, n, 'Reason Against Mbarire')}
+
+    <h3>G5 — Reasons Against Lenny Kivuti</h3>
+    <p>The primary liability for Lenny Kivuti is <strong>"${topRaw(antiKvF)}"</strong> (cited by ${pct(sortDesc(antiKvF)[0]?.[1]||0,n)}%).</p>
+    ${freqTable(antiKvF, n, 'Reason Against Kivuti')}`;
+
+  // ── SECTION 8: CROSS-TAB ──
+  const constitsWithData = constits.filter(c=>data.some(d=>d.constituency===c));
+  document.getElementById('r-cross-content').innerHTML = `
+    <h3>Governor Preference by Constituency (G1 × A2)</h3>
+    <p>This analysis reveals whether support for each candidate is geographically concentrated or evenly distributed.</p>
+    <table class="r-table">
+      <thead><tr><th>Constituency</th>${govCands.map(g=>`<th>${esc(g.split(' ').slice(-1)[0])}</th>`).join('')}<th>N</th></tr></thead>
+      <tbody>${constitsWithData.map(c=>{
+        const sub=data.filter(d=>d.constituency===c);
+        return `<tr><td>${c}</td>${govCands.map(g=>{
+          const cnt=sub.filter(d=>d.governor===g).length;
+          return `<td class="num" style="font-weight:${cnt===Math.max(...govCands.map(gg=>sub.filter(d=>d.governor===gg).length))?'700':'400'}">${pct(cnt,sub.length)}%</td>`;
+        }).join('')}<td class="num">${sub.length}</td></tr>`;
+      }).join('')}</tbody>
+    </table>
+
+    <h3>Government Performance by Age Group (D1 × A4)</h3>
+    <p>Younger age groups may rate performance differently, indicating generational divides in satisfaction.</p>
+    <table class="r-table">
+      <thead><tr><th>Age Group</th>${ratingOrder.map(r=>`<th>${r}</th>`).join('')}<th>Mean Score</th><th>N</th></tr></thead>
+      <tbody>${ageOrder.map(ag=>{
+        const sub=data.filter(d=>d.age===ag);
+        if(!sub.length) return '';
+        const m=meanScore(sub,'performance',PERF_SCORE);
+        return `<tr><td>${ag}</td>${ratingOrder.map(r=>{
+          const cnt=sub.filter(d=>d.performance===r).length;
+          return `<td class="num">${pct(cnt,sub.length)}%</td>`;
+        }).join('')}<td class="num" style="color:var(--teal);font-weight:600">${m.toFixed(2)}</td><td class="num">${sub.length}</td></tr>`;
+      }).join('')}</tbody>
+    </table>
+
+    <h3>Transparency Rating × Opinion Considered (C2 × B4)</h3>
+    <p>This cross-tab tests the hypothesis that people who rate transparency as Poor are more likely to feel their opinions are ignored — a measure of civic alienation.</p>
+    <table class="r-table">
+      <thead><tr><th>Transparency Rating</th><th>Opinion Considered: Yes</th><th>No</th><th>Not Sure</th><th>N</th></tr></thead>
+      <tbody>${ratingOrder.map(tv=>{
+        const sub=data.filter(d=>d.transparency===tv);
+        if(!sub.length) return '';
+        return `<tr><td>${tv}</td>${['Yes','No','Not sure'].map(ov=>{
+          const cnt=sub.filter(d=>d.opinion===ov).length;
+          return `<td class="num">${pct(cnt,sub.length)}%</td>`;
+        }).join('')}<td class="num">${sub.length}</td></tr>`;
+      }).join('')}</tbody>
+    </table>
+
+    <h3>Governor Pick × Performance Rating (G1 × D1) — Partisan Bias Check</h3>
+    <p>Supporters of a candidate who currently holds office tend to rate performance more positively. Wide divergence between candidate groups confirms partisan bias in responses.</p>
+    <table class="r-table">
+      <thead><tr><th>Governor Pick</th>${ratingOrder.map(r=>`<th>${r}</th>`).join('')}<th>Mean Score</th><th>N</th></tr></thead>
+      <tbody>${govCands.map(g=>{
+        const sub=data.filter(d=>d.governor===g);
+        if(!sub.length) return '';
+        const m=meanScore(sub,'performance',PERF_SCORE);
+        return `<tr><td>${esc(g)}</td>${ratingOrder.map(r=>{
+          const cnt=sub.filter(d=>d.performance===r).length;
+          return `<td class="num">${pct(cnt,sub.length)}%</td>`;
+        }).join('')}<td class="num" style="color:var(--teal);font-weight:600">${m.toFixed(2)}</td><td class="num">${sub.length}</td></tr>`;
+      }).join('')}</tbody>
+    </table>`;
+
+  // ── SECTION 9: QUALITATIVE ──
+  function topWords(textArr, k=8) {
+    const wf={};
+    textArr.join(' ').toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/)
+      .filter(w=>w.length>2&&!STOPWORDS.has(w))
+      .forEach(w=>{wf[w]=(wf[w]||0)+1;});
+    return Object.entries(wf).sort((a,b)=>b[1]-a[1]).slice(0,k);
+  }
+  function themeSummary(textArr, label) {
+    if (!textArr.length) return `<p style="color:var(--muted2)">No ${label} responses collected yet.</p>`;
+    const tw = topWords(textArr, 10);
+    return `<p>Based on ${textArr.length} open-ended responses, the most frequently mentioned terms are: ${tw.map(([w,c])=>`<strong>${w}</strong> (${c}×)`).join(', ')}.</p>
+    <p>These terms suggest the primary themes centre around: ${categoriseThemes(tw)}.</p>`;
+  }
+  function categoriseThemes(topWords) {
+    const themes = new Set();
+    topWords.forEach(([w])=>{
+      if(/road|tarmac|bridge|transport/.test(w)) themes.add('Infrastructure');
+      if(/water|irrigation|dam/.test(w)) themes.add('Water Access');
+      if(/health|hospital|clinic/.test(w)) themes.add('Healthcare');
+      if(/school|educat|teacher/.test(w)) themes.add('Education');
+      if(/job|employ|youth/.test(w)) themes.add('Employment');
+      if(/corrupt|account/.test(w)) themes.add('Accountability');
+      if(/farm|agri|crop/.test(w)) themes.add('Agriculture');
+      if(/develop|project|fund/.test(w)) themes.add('Development Projects');
+    });
+    return themes.size ? [...themes].join(', ') : 'general community concerns';
+  }
+
+  document.getElementById('r-qual-content').innerHTML = `
+    <p>Open-ended questions were analysed using word frequency analysis with stopword filtering. The following summaries identify dominant themes across each question.</p>
+    <h3>B5 — Political Issues Facing the Constituency</h3>
+    ${themeSummary(data.map(d=>d.issues).filter(Boolean), 'political issues')}
+    <h3>G4 — Advice to Cecily Mbarire</h3>
+    ${themeSummary(data.map(d=>d.adviceMbarire).filter(Boolean), 'advice to Mbarire')}
+    <h3>G6 — Advice to Lenny Kivuti</h3>
+    ${themeSummary(data.map(d=>d.adviceKivuti).filter(Boolean), 'advice to Kivuti')}
+    <h3>G7 — General Comments</h3>
+    ${themeSummary(data.map(d=>d.comments).filter(Boolean), 'general comments')}`;
+
+  // ── SECTION 10: RECOMMENDATIONS ──
+  const recMbarire = topRaw(antiMbF);
+  const recKivuti  = topRaw(antiKvF);
+  const recService = worstSvc.label;
+  const recEngage  = pct((engF.Rarely||0)+(engF.Never||0),n);
+  const recUndecided = govF['Not yet decided']||0;
+  document.getElementById('r-rec-content').innerHTML = `
+    <h3>For County Government / Incumbents</h3>
+    <ul>
+      <li><strong>Prioritise ${recService}:</strong> Rated the lowest service area at ${worstSvc.score.toFixed(2)}/5. Visible, targeted improvement here will directly address the top voter grievance.</li>
+      <li><strong>Address Favoritism Perception:</strong> ${pct(biasF.Yes||0,n)}% report political bias. Transparent, ward-based resource allocation with public reporting will help rebuild trust.</li>
+      <li><strong>Improve Civic Communication:</strong> ${recEngage}% of respondents Rarely or Never engage with leaders. A structured outreach programme — particularly through Barazas and community radios (the dominant information sources) — is essential.</li>
+      <li><strong>Focus on Top Priority Needs:</strong> The weighted priority analysis clearly identifies the community's top demands. Budget alignment with these needs demonstrates responsiveness.</li>
+    </ul>
+    <h3>For Cecily Mbarire's Campaign</h3>
+    <div class="r-callout"><strong>Primary vulnerability:</strong> "${recMbarire}" — this must be proactively addressed in messaging and track record communication. Avoid defensive posturing; instead, acknowledge and present a concrete action plan.</div>
+    <ul>
+      <li>Lead with service delivery achievements, particularly in areas rated above average.</li>
+      <li>Target undecided voters (${recUndecided} respondents) with specific, ward-level commitments on the top 3 priority needs.</li>
+      <li>Constituency-specific messaging is critical — governor preference varies significantly by constituency.</li>
+    </ul>
+    <h3>For Lenny Kivuti's Campaign</h3>
+    <div class="r-callout r-callout-gold"><strong>Primary vulnerability:</strong> "${recKivuti}" — counter-narrative must be clear, credible, and community-specific.</div>
+    <ul>
+      <li>Focus campaign presence in constituencies where Mbarire support is weaker.</li>
+      <li>Mobilise unregistered voters (${voterF.No||0} respondents) as a new electoral base — this is an untapped advantage if properly organised.</li>
+      <li>Youth engagement is critical — the 18–37 age cohort represents ${pct((ageF['18-27']||0)+(ageF['28-37']||0),n)}% of respondents. Their priorities around employment and youth services should anchor the youth manifesto.</li>
+    </ul>
+    <h3>Research Methodology Notes</h3>
+    <ul>
+      <li>This analysis is based on ${n} survey responses. Findings should be interpreted alongside confidence intervals, particularly for sub-group analyses with small samples.</li>
+      <li>Word frequency analysis is indicative only. Full thematic coding by a qualitative analyst is recommended for the open-ended questions.</li>
+      <li>The cross-tabulation findings on partisan bias (G1 × D1) suggest that performance ratings should be interpreted with awareness of respondents' stated voting preferences.</li>
+    </ul>`;
+}
+
+/* ════════════════════════════════════
+   PDF REPORT DOWNLOAD
+════════════════════════════════════ */
+function downloadReportPDF() {
+  if (!data.length) return toast('No data loaded yet','#c8431a');
+  buildReport(); // ensure report is up to date
+  const doc = document.getElementById('reportDoc');
+  if (!doc) return;
+
+  const printWin = window.open('', '_blank', 'width=900,height=700');
+  if (!printWin) { toast('Allow pop-ups to download PDF','#c4942a'); return; }
+
+  // Collect all style tags and link tags from the current page
+  const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+    .map(el => el.outerHTML).join('\n');
+
+  printWin.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>Embu County Survey — Analysis Report</title>
+    ${styles}
+    <style>
+      body { background: #fff !important; margin: 0; padding: 0; }
+      .report-doc { border: none !important; padding: 40px 56px !important; box-shadow: none !important; }
+      @page { margin: 15mm 12mm; size: A4; }
+      @media print {
+        body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      }
+    </style>
+  </head><body>
+    <div class="report-doc">${doc.innerHTML}</div>
+    <script>
+      window.onload = function() {
+        setTimeout(function() { window.print(); window.close(); }, 800);
+      };
+    <\/script>
+  </body></html>`);
+  printWin.document.close();
+  toast('📄 PDF print dialog opening…','#1a7c6a');
+}
+
+/* ════════════════════════════════════
+   EXCEL EXPORT — ANALYSIS ONLY
+════════════════════════════════════ */
+function exportExcelAnalysis() {
+  if (!data.length) return toast('No data loaded','#c8431a');
+  const n = data.length;
+  const stamp = new Date().toISOString().slice(0,10);
+
+  // Helper: build an HTML table block with a heading
+  function xlSheet(title, rows) {
+    // rows = array of arrays (header first)
+    let t = `<tr><td colspan="10" style="background:#0d1117;color:#fff;font-weight:700;font-size:14px;padding:8px">${title}</td></tr>`;
+    rows.forEach((row, ri) => {
+      const isHead = ri === 0;
+      t += '<tr>' + row.map(c => {
+        const style = isHead
+          ? 'background:#c8431a;color:#fff;font-weight:700;border:1px solid #a03214'
+          : 'border:1px solid #e0dbd3;padding:5px 8px';
+        return `<td style="${style};padding:6px 10px">${c ?? ''}</td>`;
+      }).join('') + '</tr>';
+    });
+    t += '<tr><td colspan="10"></td></tr>';
+    return t;
+  }
+
+  function freqRows(obj, label='Response') {
+    const rows = [[ label, 'Count (n)', 'Percentage (%)' ]];
+    sortDesc(obj).forEach(([l,v]) => rows.push([l, v, pct(v,n)+'%']));
+    rows.push(['TOTAL', n, '100%']);
+    return rows;
+  }
+
+  const ageOrder = ['18-27','28-37','38-47','48-57','58-67','68-77','Over 78'];
+  const constits = ['Manyatta','Runyenjes','Mbeere North','Mbeere South'];
+  const govCands = ['Cecily Mbarire','Lenny Kivuti','A new face','Not yet decided'];
+  const ratingOrder = ['Excellent','Good','Fair','Poor'];
+  const perfMean = meanScore(data, 'performance', PERF_SCORE);
+
+  // Use SheetJS for reliable .xlsx output
+  if (window.XLSX) {
+    const wb = XLSX.utils.book_new();
+    function addSheet(name, rows) {
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, name.slice(0,31));
+    }
+    addSheet('Demographics', [
+      ['EMBU COUNTY SURVEY — DEMOGRAPHICS',`N=${n}`,stamp],[],
+      ['A1 — GENDER DISTRIBUTION'],...freqRows(freq(data,'gender'),'Gender'),[],
+      ['A4 — AGE DISTRIBUTION'],...freqRows(Object.fromEntries(ageOrder.map(k=>[k,freq(data,'age')[k]||0])),'Age Group'),[],
+      ['A2 — CONSTITUENCY'],...freqRows(freq(data,'constituency'),'Constituency'),[],
+      ['A5 — EDUCATION'],...freqRows(freq(data,'education'),'Education Level'),[],
+      ['A6 — EMPLOYMENT'],...freqRows(freq(data,'employment'),'Employment Status')
+    ]);
+    addSheet('Political Participation', [
+      ['POLITICAL PARTICIPATION'],[],
+      ['B1 — VOTER REGISTRATION'],...freqRows(freq(data,'voter'),'Registration'),[],
+      ['B2 — ENGAGEMENT'],...freqRows(freq(data,'engage'),'Frequency'),[],
+      ['B3 — MOTIVATION'],...freqRows(freqMulti(data,'motivation'),'Motivation'),[],
+      ['B4 — OPINION CONSIDERED'],...freqRows(freq(data,'opinion'),'Response'),[],
+      ['B6 — NOT DELIVERED'],...freqRows(freqMulti(data,'notDelivered'),'Area'),[],
+      ['B7 — POLICY AWARENESS'],...freqRows(freq(data,'policyAware'),'Aware?'),[],
+      ['C1 — INFO SOURCES'],...freqRows(freqMulti(data,'infoSources'),'Source'),[],
+      ['C2 — TRANSPARENCY'],...freqRows(freq(data,'transparency'),'Rating')
+    ]);
+    const pmRows2=[['Constituency','Excellent','Good','Fair','Poor','Mean Score','N']];
+    constits.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;const m=meanScore(sub,'performance',PERF_SCORE);pmRows2.push([c,...ratingOrder.map(r=>pct(sub.filter(d=>d.performance===r).length,sub.length)+'%'),m.toFixed(2),sub.length]);});
+    const pm2b={};data.forEach(d=>{const lines=(d.needs||'').split('\n').map(l=>l.replace(/^\d+[\.\)]\s*/,'').trim()).filter(Boolean);lines.forEach((line,idx)=>{const score=Math.max(5-idx,1);const theme=categorizeNeed(line);pm2b[theme]=(pm2b[theme]||0)+score;});});
+    const prRows2=[['Rank','Priority Need','Weighted Score']];Object.entries(pm2b).sort((a,b)=>b[1]-a[1]).slice(0,10).forEach(([l,s],i)=>prRows2.push([i+1,l,s]));
+    addSheet('Governance', [
+      ['GOVERNANCE'],[],
+      ['D1 — PERFORMANCE RATING'],...freqRows(freq(data,'performance'),'Rating'),[],
+      ['D1 × A2 — PERFORMANCE BY CONSTITUENCY'],...pmRows2,[],
+      ['C3 — POLITICAL FAVORITISM'],...freqRows(freq(data,'bias'),'Favoritism'),[],
+      ['D6 — TOP PRIORITY NEEDS (WEIGHTED)'],...prRows2
+    ]);
+    const svcHdr=['Service Area','Not Sure','Poor','Fair','Good','Excellent','Mean /5','Mode'];
+    const svcData2=[svcHdr];
+    SVC_FIELDS.forEach(sf=>{const rf=freq(data,sf.key);const m=meanScore(data,sf.key,RATING_SCORE);const mode=['Excellent','Good','Fair','Poor','Not Sure'].find(r=>(rf[r]||0)===Math.max(...['Excellent','Good','Fair','Poor','Not Sure'].map(r=>rf[r]||0)))||'—';svcData2.push([sf.label,pct(rf['Not Sure']||rf['Not sure']||0,n)+'%',pct(rf.Poor||0,n)+'%',pct(rf.Fair||0,n)+'%',pct(rf.Good||0,n)+'%',pct(rf.Excellent||0,n)+'%',m.toFixed(2),mode]);});
+    addSheet('Service Delivery', [['SERVICE DELIVERY MEAN SCORES'],[],...svcData2]);
+    addSheet('Economics', [
+      ['ECONOMICS & SECTORS'],[],
+      ['F1 — FARMING CHALLENGES'],...freqRows(freqMulti(data,'farmingChallenges'),'Challenge'),[],
+      ['F2 — INFRASTRUCTURE RATING'],...freqRows(freq(data,'infraRating'),'Rating'),[],
+      ['F3 — INFRASTRUCTURE NEEDED'],...freqRows(freqMulti(data,'infraNeeded'),'Type'),[],
+      ['F4 — SME OBSTACLES'],...freqRows(freqMulti(data,'smeObstacles'),'Obstacle'),[],
+      ['F6 — HEALTHCARE CHALLENGES'],...freqRows(freqMulti(data,'healthChallenges'),'Challenge'),[],
+      ['F8 — EDUCATION RATING'],...freqRows(freq(data,'eduRating'),'Rating'),[],
+      ['F9 — EDUCATION CONCERNS'],...freqRows(freqMulti(data,'eduConcerns'),'Concern')
+    ]);
+    const gvConstRows2=[['Constituency',...govCands,'N']];
+    constits.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;gvConstRows2.push([c,...govCands.map(g=>pct(sub.filter(d=>d.governor===g).length,sub.length)+'%'),sub.length]);});
+    addSheet('Political Sentiment', [
+      ['POLITICAL SENTIMENT'],[],
+      ['G1 — GOVERNOR VOTING INTENTION'],...freqRows(freq(data,'governor'),'Preference'),[],
+      ['G1 × A2 — GOVERNOR BY CONSTITUENCY'],...gvConstRows2,[],
+      ['G2 — VOTE REASONS'],...freqRows(freqMulti(data,'voteReasons'),'Reason'),[],
+      ['G3 — ANTI-MBARIRE'],...freqRows(freqMulti(data,'notMbarireReasons'),'Reason'),[],
+      ['G5 — ANTI-KIVUTI'],...freqRows(freqMulti(data,'notKivutiReasons'),'Reason')
+    ]);
+    const svcMeans3=SVC_FIELDS.map(sf=>({label:sf.label,score:meanScore(data,sf.key,RATING_SCORE)}));
+    addSheet('Summary', [
+      ['METRIC','VALUE','NOTE'],
+      ['Total Respondents',n,''],
+      ['Female',`${freq(data,'gender').Female||0} (${pct(freq(data,'gender').Female||0,n)}%)`,'A1'],
+      ['Male',`${freq(data,'gender').Male||0} (${pct(freq(data,'gender').Male||0,n)}%)`,'A1'],
+      ['Registered Voters',`${freq(data,'voter').Yes||0} (${pct(freq(data,'voter').Yes||0,n)}%)`,'B1'],
+      ['Mean Performance Score',`${perfMean.toFixed(2)}/4.0`,'D1'],
+      ...svcMeans3.map(s=>[`Mean: ${s.label}`,`${s.score.toFixed(2)}/5.0`,'Section E']),
+      ['Mbarire Vote Intent',`${pct(freq(data,'governor')['Cecily Mbarire']||0,n)}%`,'G1'],
+      ['Kivuti Vote Intent',`${pct(freq(data,'governor')['Lenny Kivuti']||0,n)}%`,'G1'],
+      ['Undecided Voters',`${pct(freq(data,'governor')['Not yet decided']||0,n)}%`,'G1'],
+    ]);
+    XLSX.writeFile(wb, `embu_analysis_${stamp}.xlsx`);
+    toast(`✓ Excel exported — 7 sheets, N=${n}`,'#1a7c6a');
+  } else {
+    toast('SheetJS not loaded. Refresh and try again.','#c8431a');
+  }
+}
+
+/* ── TOAST ── */
+let tt;
+function toast(msg, bg='#0d1117') {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.style.background=bg;
+  el.style.transform='translateY(0)'; el.style.opacity='1';
+  clearTimeout(tt);
+  tt=setTimeout(()=>{el.style.transform='translateY(80px)';el.style.opacity='0';},3500);
+}
+</script>
+</body>
+</html>
