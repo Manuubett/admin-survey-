@@ -1024,7 +1024,7 @@ const ADMIN_EMAILS = [
   "bettemanuel49@gmail.com",
   "senatorkivuti@gmail.com",
   "nicholaskasanga2@gmail.com",
-  "kiiondwiga@gmail.com",
+  "Kiiondwiga@gmail.com",
   "janekarimifaith@gmail.com",
 ];
 
@@ -1715,7 +1715,7 @@ function buildReport(){
 
   document.getElementById('r-eco-content').innerHTML=`<h3>E1 — SME Challenges</h3>${ftbl(smeF,n,'Challenge')}`;
 
-  const ppf={};data.forEach(d=>{const vv=(d.preferredPres||'').trim();if(vv&&d.reelectRuto==='No')ppf[vv]=(ppf[vv]||0)+1;});
+ const ppf={};data.forEach(d=>{const vv=(d.preferredPres||'').trim();if(vv&&d.reelectRuto==='No')ppf[vv]=(ppf[vv]||0)+1;});
   document.getElementById('r-sent-content').innerHTML=`
     <h3>G1 — Re-elect President Ruto?</h3>${ftbl(rutoF,n,'Response')}
     ${pct(rutoF.Yes||0,n)<50?`<div class="r-callout"><strong>Note:</strong> Majority oppose re-electing Ruto.</div>`:''}
@@ -1727,15 +1727,57 @@ function buildReport(){
     <h3>G5 — Reasons AGAINST Mbarire</h3>${ftbl(antiMbF,n,'Reason')}
     <h3>G7 — Reasons AGAINST Kivuti</h3>${ftbl(antiKvF,n,'Reason')}
     <h3>G8 — Reasons AGAINST Gitonga Mukunji</h3>${ftbl(antiGiF,n,'Reason')}
-    <h3>G9 — Candidate Preferences</h3>
-    <table class="r-table"><thead><tr><th>Position</th><th>Top Choice</th><th>%</th></tr></thead><tbody>
-      <tr><td>Senator</td><td>${topLbl(cleanCandFreq('prefSenator'))}</td><td class="num">${pct(sortDesc(cleanCandFreq('prefSenator'))[0]?.[1]||0,n)}%</td></tr>
-      <tr><td>Women Representative</td><td>${topLbl(cleanCandFreq('prefWomenRep'))}</td><td class="num">${pct(sortDesc(cleanCandFreq('prefWomenRep'))[0]?.[1]||0,n)}%</td></tr>
-      <tr><td>Member of Parliament</td><td>${topLbl(cleanCandFreq('prefMP'))}</td><td class="num">${pct(sortDesc(cleanCandFreq('prefMP'))[0]?.[1]||0,n)}%</td></tr>
-      <tr><td>Member of County Assembly</td><td>${topLbl(cleanCandFreq('prefMCA'))}</td><td class="num">${pct(sortDesc(cleanCandFreq('prefMCA'))[0]?.[1]||0,n)}%</td></tr>
-    </tbody></table>
-    <h3>I — Follow-up Consent</h3>${ftbl(fupF,n,'Response')}`;
 
+    <h3>G9 — Senator Preferences (Full Breakdown)</h3>
+    ${ftbl(cleanCandFreq('prefSenator'),n,'Candidate')}
+
+    <h3>G9 — Women Representative Preferences (Full Breakdown)</h3>
+    ${ftbl(cleanCandFreq('prefWomenRep'),n,'Candidate')}
+
+    <h3>G9 — Member of Parliament by Constituency</h3>
+    ${(()=>{
+      let ht=`<table class="r-table"><thead><tr><th>Constituency</th><th>Top MP Pick</th><th>Count</th><th>%</th></tr></thead><tbody>`;
+      CONSTITS.forEach(c=>{
+        const sub=data.filter(d=>d.constituency===c);
+        const mpF={};
+        sub.forEach(d=>{const v=d.prefMP;if(v&&v!=='__other__'&&v.trim())mpF[v]=(mpF[v]||0)+1;});
+        const tops=sortDesc(mpF).slice(0,3);
+        if(!tops.length){ht+=`<tr><td>${c}</td><td colspan="3" style="color:var(--muted2)">No data</td></tr>`;return;}
+        tops.forEach(([name,cnt],i)=>{
+          ht+=`<tr><td>${i===0?c:''}</td><td>${i===0?'🥇 ':''}${esc(name)}</td><td class="num">${cnt}</td><td class="num">${pct(cnt,sub.length)}%</td></tr>`;
+        });
+      });
+      ht+='</tbody></table>';
+      return ht;
+    })()}
+    <h3>G9 — All MP Candidates (Full List)</h3>
+    ${ftbl(cleanCandFreq('prefMP'),n,'Candidate')}
+
+    <h3>G9 — MCA Preferences by Ward</h3>
+    ${(()=>{
+      const wardMCA={};
+      data.forEach(d=>{
+        if(d.prefMCA&&d.prefMCA!=='__other__'&&d.prefMCA.trim()&&d.ward){
+          if(!wardMCA[d.ward])wardMCA[d.ward]={};
+          wardMCA[d.ward][d.prefMCA]=(wardMCA[d.ward][d.prefMCA]||0)+1;
+        }
+      });
+      if(!Object.keys(wardMCA).length)return'<p style="color:var(--muted2);font-style:italic">No MCA data recorded yet.</p>';
+      let ht=`<table class="r-table"><thead><tr><th>Ward</th><th>Top MCA Pick</th><th>Count</th><th>%</th></tr></thead><tbody>`;
+      Object.entries(wardMCA).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([ward,cands])=>{
+        const sub=data.filter(d=>d.ward===ward);
+        const tops=sortDesc(cands).slice(0,3);
+        tops.forEach(([name,cnt],i)=>{
+          ht+=`<tr><td>${i===0?esc(ward):''}</td><td>${i===0?'🥇 ':''}${esc(name)}</td><td class="num">${cnt}</td><td class="num">${pct(cnt,sub.length)}%</td></tr>`;
+        });
+      });
+      ht+='</tbody></table>';
+      return ht;
+    })()}
+    <h3>G9 — All MCA Candidates (Full List)</h3>
+    ${ftbl(cleanCandFreq('prefMCA'),n,'Candidate')}
+
+    <h3>I — Follow-up Consent</h3>${ftbl(fupF,n,'Response')}`;
   /* ── NEW: Advice section in report ── */
   document.getElementById('r-advice-content').innerHTML=`
     <p>These sections capture open-text advice given by respondents to each leader. They are analysed by word frequency and sampled quotes below.</p>
