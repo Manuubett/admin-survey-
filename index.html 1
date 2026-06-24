@@ -58,6 +58,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
 .tbtn.primary{background:var(--gold);color:var(--ink);border-color:var(--gold);}
 .tbtn.primary:hover{background:#b07a2a;color:#fff;}
 .tbtn.danger{background:rgba(184,50,50,.7);color:#fff;border-color:rgba(184,50,50,.5);}
+.tbtn.print-btn{background:rgba(200,150,62,.2);color:var(--gold-lt);border-color:rgba(200,150,62,.35);}
+.tbtn.print-btn:hover{background:rgba(200,150,62,.35);color:#fff;}
 .tbtn:disabled{opacity:.4;pointer-events:none;}
 .admin-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:4px 12px 4px 4px;font-size:11px;color:rgba(255,255,255,.7);}
 .admin-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.3);}
@@ -207,7 +209,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
 
 /* ── REPORT ── */
 .report-wrap{max-width:900px;margin:0 auto;}
-.report-actions{display:flex;gap:10px;justify-content:flex-end;margin-bottom:20px;}
+.report-actions{display:flex;gap:10px;justify-content:flex-end;margin-bottom:20px;flex-wrap:wrap;}
 .report-doc{background:#fff;border:1px solid var(--border);border-radius:12px;padding:52px 60px;line-height:1.8;color:var(--ink);}
 .r-cover{text-align:center;border-bottom:2px solid var(--ink);padding-bottom:32px;margin-bottom:36px;}
 .r-cover h1{font-family:'Fraunces',serif;font-size:26px;font-weight:700;margin-bottom:6px;}
@@ -248,11 +250,71 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
 .r-finding h3{color:#fff;font-size:16px;margin-bottom:12px;margin-top:0;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:8px;}
 .r-finding p{color:rgba(255,255,255,.75);}
 .r-finding strong{color:#fff;}
+
+/* ── PRINT PREVIEW MODAL ── */
+#printModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;align-items:center;justify-content:center;}
+#printModal.open{display:flex;}
+.pm-card{background:#fff;border-radius:16px;padding:32px 36px;max-width:520px;width:100%;box-shadow:0 32px 80px rgba(0,0,0,.3);}
+.pm-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--forest);margin-bottom:8px;}
+.pm-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.6;}
+.pm-options{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+.pm-opt{display:flex;align-items:center;gap:12px;padding:13px 16px;border:2px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;}
+.pm-opt:hover{border-color:var(--leaf);background:var(--teal-l);}
+.pm-opt.selected{border-color:var(--leaf);background:var(--teal-l);}
+.pm-opt-icon{font-size:20px;flex-shrink:0;}
+.pm-opt-label{font-size:14px;font-weight:600;color:var(--ink);}
+.pm-opt-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+.pm-actions{display:flex;gap:10px;justify-content:flex-end;}
+.pm-btn{padding:10px 20px;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;}
+.pm-btn.cancel{background:var(--warm);color:var(--ink);}
+.pm-btn.confirm{background:var(--forest);color:#fff;}
+.pm-btn.confirm:hover{background:var(--leaf);}
+
+/* ── PRINT PROGRESS ── */
+#printProgress{display:none;position:fixed;inset:0;background:rgba(12,26,14,.92);z-index:3000;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+#printProgress.open{display:flex;}
+.pp-spinner{width:48px;height:48px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--mint);border-radius:50%;animation:spin .7s linear infinite;}
+.pp-msg{font-size:14px;color:rgba(255,255,255,.8);}
+.pp-detail{font-size:12px;color:rgba(255,255,255,.4);}
+
 @media(max-width:900px){.report-doc{padding:28px 22px;}.r-toc ol{grid-template-columns:1fr;}}
 @media(max-width:1200px){.hero-stats{grid-template-columns:repeat(4,1fr);}}
 @media(max-width:900px){.grid-3,.grid-4{grid-template-columns:1fr 1fr;}.hero-stats{grid-template-columns:repeat(4,1fr);}.page{padding:16px 16px 40px;}.span2,.span3{grid-column:span 1;}}
 @media(max-width:640px){.hero-stats{grid-template-columns:repeat(2,1fr);}.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
-@media print{.topbar,.tabs-bar,.hero-stats,.filter-bar,.report-actions{display:none!important;}.tab-content{display:block!important;}.report-doc{border:none;padding:0;}body{background:#fff;}}
+
+/* ══ PRINT STYLES ══ */
+@media print{
+  .topbar,.tabs-bar,.hero-stats,.filter-bar,.report-actions,
+  #printModal,#printProgress,#toast,.contacts-pager,
+  .tbtn{display:none!important;}
+
+  body{background:#fff!important;font-size:12pt;}
+  .page{padding:0!important;max-width:100%!important;}
+
+  .tab-content{display:block!important;}
+  .tab-content + .tab-content{page-break-before:always;}
+
+  .card{page-break-inside:avoid;border:1px solid #ccc!important;border-radius:6px!important;}
+  .grid-2,.grid-3,.grid-4{display:block!important;}
+  .grid-2 .card,.grid-3 .card,.grid-4 .card{margin-bottom:16px;}
+
+  /* FIX: Hide canvases, show print-chart images */
+  canvas{display:none!important;}
+  img.print-chart{display:block!important;max-width:100%;height:auto;}
+
+  /* FIX: Hide blank/failed snapshots */
+  img.print-chart:not([src]){display:none!important;}
+  img.print-chart[src=""]{display:none!important;}
+
+  .report-doc{border:none!important;padding:0!important;}
+  .r-finding{background:#1a4a2a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .r-table th{background:#1a4a2a!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+  .print-section-header{display:block!important;}
+}
+
+.print-section-header{display:none;}
+img.print-chart{display:none;}
 
 /* TOAST */
 #toast{position:fixed;bottom:22px;right:22px;padding:11px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:var(--sh);transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:600;color:#fff;}
@@ -282,6 +344,48 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
   <div class="load-txt" id="loadMsg">Loading survey data…</div>
 </div>
 
+<!-- PRINT PROGRESS -->
+<div id="printProgress">
+  <div class="pp-spinner"></div>
+  <div class="pp-msg">Preparing charts for print…</div>
+  <div class="pp-detail" id="pp-detail">Capturing chart images…</div>
+</div>
+
+<!-- PRINT MODAL -->
+<div id="printModal">
+  <div class="pm-card">
+    <div class="pm-title">🖨 Print / Export</div>
+    <div class="pm-sub">Choose what to include in your printed document. Charts will be captured as images so they appear correctly in print.</div>
+    <div class="pm-options">
+      <div class="pm-opt selected" id="popt-report" onclick="selectPrintOpt('report')">
+        <div class="pm-opt-icon">📄</div>
+        <div>
+          <div class="pm-opt-label">Report Only</div>
+          <div class="pm-opt-desc">Print the full analytical report with tables and findings</div>
+        </div>
+      </div>
+      <div class="pm-opt" id="popt-charts" onclick="selectPrintOpt('charts')">
+        <div class="pm-opt-icon">📊</div>
+        <div>
+          <div class="pm-opt-label">Charts + Report</div>
+          <div class="pm-opt-desc">Include all charts and graphs alongside the report (recommended)</div>
+        </div>
+      </div>
+      <div class="pm-opt" id="popt-all" onclick="selectPrintOpt('all')">
+        <div class="pm-opt-icon">📋</div>
+        <div>
+          <div class="pm-opt-label">Full Dashboard</div>
+          <div class="pm-opt-desc">Print every tab — Demographics, Political, Governance, Sentiment, and Report</div>
+        </div>
+      </div>
+    </div>
+    <div class="pm-actions">
+      <button class="pm-btn cancel" onclick="closePrintModal()">Cancel</button>
+      <button class="pm-btn confirm" onclick="executePrint()">🖨 Print Now</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="tb-brand">
@@ -300,8 +404,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
   </div>
   <div class="tb-actions">
     <button class="tbtn" onclick="refreshData()" id="refreshBtn">↻ Refresh</button>
+    <button class="tbtn print-btn" onclick="openPrintModal()">🖨 Print</button>
     <button class="tbtn" onclick="switchTab('report',document.querySelector('[data-tab=report]'))">📄 Report</button>
-    <button class="tbtn primary" onclick="exportExcel()">⬇ Export Excel</button>
+    <button class="tbtn primary" onclick="exportExcel()">⬇ Excel</button>
     <button class="tbtn danger" onclick="adminSignOut()">Sign Out</button>
   </div>
 </div>
@@ -377,13 +482,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
     <div class="card">
       <div class="card-head"><div><div class="card-title">A1 — Gender Split</div></div><span class="card-badge bg-green">A1</span></div>
       <div class="card-body">
-        <div class="donut-wrap" style="max-width:170px;"><canvas id="ch-gender-ov"></canvas><div class="donut-center"><div class="donut-big" id="donut-gender-n">—</div><div class="donut-lbl">total</div></div></div>
+        <div class="donut-wrap" style="max-width:170px;"><canvas id="ch-gender-ov"></canvas><img class="print-chart" id="img-ch-gender-ov"><div class="donut-center"><div class="donut-big" id="donut-gender-n">—</div><div class="donut-lbl">total</div></div></div>
         <div class="legend" id="legend-gender-ov"></div>
       </div>
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">A5 — Age Distribution</div></div><span class="card-badge bg-gold">A5</span></div>
-      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-age-ov"></canvas></div></div>
+      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-age-ov"></canvas><img class="print-chart" id="img-ch-age-ov"></div></div>
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">A2 — Constituency</div></div><span class="card-badge bg-green">A2</span></div>
@@ -392,7 +497,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
     <div class="card">
       <div class="card-head"><div><div class="card-title">G2 — Governor Intent</div></div><span class="card-badge bg-red">G2</span></div>
       <div class="card-body">
-        <div class="donut-wrap" style="max-width:170px;"><canvas id="ch-gov-ov"></canvas><div class="donut-center"><div class="donut-lbl" style="font-size:11px">Governor<br>Preference</div></div></div>
+        <div class="donut-wrap" style="max-width:170px;"><canvas id="ch-gov-ov"></canvas><img class="print-chart" id="img-ch-gov-ov"><div class="donut-center"><div class="donut-lbl" style="font-size:11px">Governor<br>Preference</div></div></div>
         <div class="legend" id="legend-gov-ov"></div>
       </div>
     </div>
@@ -401,7 +506,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
   <div class="grid-2">
     <div class="card">
       <div class="card-head"><div><div class="card-title">D1 — County Government Performance</div></div><span class="card-badge bg-sky">D1</span></div>
-      <div class="card-body"><div class="ch-wrap"><canvas id="ch-perf-ov"></canvas></div></div>
+      <div class="card-body"><div class="ch-wrap"><canvas id="ch-perf-ov"></canvas><img class="print-chart" id="img-ch-perf-ov"></div></div>
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">B2 — Undelivered Sectors</div><div class="card-sub">Areas government has NOT delivered (multi-select)</div></div><span class="card-badge bg-red">B2</span></div>
@@ -416,7 +521,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
   <div class="grid-3">
     <div class="card">
       <div class="card-head"><div><div class="card-title">A1 — Gender</div></div><span class="card-badge bg-green">A1</span></div>
-      <div class="card-body"><div class="ch-wrap"><canvas id="ch-gender-d"></canvas></div><div class="legend" id="legend-gender-d"></div></div>
+      <div class="card-body"><div class="ch-wrap"><canvas id="ch-gender-d"></canvas><img class="print-chart" id="img-ch-gender-d"></div><div class="legend" id="legend-gender-d"></div></div>
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">A6 — Education Level</div></div><span class="card-badge bg-gold">A6</span></div>
@@ -424,13 +529,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">A7 — Employment Status</div></div><span class="card-badge bg-green">A7</span></div>
-      <div class="card-body"><div class="ch-wrap"><canvas id="ch-emp"></canvas></div><div class="legend" id="legend-emp"></div></div>
+      <div class="card-body"><div class="ch-wrap"><canvas id="ch-emp"></canvas><img class="print-chart" id="img-ch-emp"></div><div class="legend" id="legend-emp"></div></div>
     </div>
   </div>
   <div class="grid-2">
     <div class="card">
       <div class="card-head"><div><div class="card-title">A5 — Age Distribution</div></div><span class="card-badge bg-sky">A5</span></div>
-      <div class="card-body"><div class="ch-wrap"><canvas id="ch-age-d"></canvas></div></div>
+      <div class="card-body"><div class="ch-wrap"><canvas id="ch-age-d"></canvas><img class="print-chart" id="img-ch-age-d"></div></div>
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">A2 — Constituency Coverage</div></div><span class="card-badge bg-plum">A2</span></div>
@@ -450,7 +555,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
   <div class="grid-2">
     <div class="card">
       <div class="card-head"><div><div class="card-title">A4 — Polling Station Validation</div></div><span class="card-badge bg-green">A4</span></div>
-      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-ps-valid"></canvas></div><div class="hbar-list" style="margin-top:10px" id="hbar-ps-valid"></div></div>
+      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-ps-valid"></canvas><img class="print-chart" id="img-ch-ps-valid"></div><div class="hbar-list" style="margin-top:10px" id="hbar-ps-valid"></div></div>
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">Researcher Activity</div><div class="card-sub">Submissions per researcher (top 10)</div></div><span class="card-badge bg-sky">Field</span></div>
@@ -494,7 +599,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">C1 — Information Sources Chart</div></div><span class="card-badge bg-gold">C1</span></div>
-      <div class="card-body"><div class="ch-wrap tall"><canvas id="ch-info"></canvas></div></div>
+      <div class="card-body"><div class="ch-wrap tall"><canvas id="ch-info"></canvas><img class="print-chart" id="img-ch-info"></div></div>
     </div>
   </div>
 </div>
@@ -505,15 +610,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
   <div class="grid-3">
     <div class="card">
       <div class="card-head"><div><div class="card-title">D1 — Government Performance</div></div><span class="card-badge bg-red">D1</span></div>
-      <div class="card-body"><div class="ch-wrap"><canvas id="ch-perf-g"></canvas></div><div class="legend" id="legend-perf-g"></div></div>
+      <div class="card-body"><div class="ch-wrap"><canvas id="ch-perf-g"></canvas><img class="print-chart" id="img-ch-perf-g"></div><div class="legend" id="legend-perf-g"></div></div>
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">D2 — Aware of Projects Delivered?</div></div><span class="card-badge bg-gold">D2</span></div>
-      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-proj-aware"></canvas></div></div>
+      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-proj-aware"></canvas><img class="print-chart" id="img-ch-proj-aware"></div></div>
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">D3 — Promises Not Delivered?</div></div><span class="card-badge bg-sky">D3</span></div>
-      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-missed"></canvas></div></div>
+      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-missed"></canvas><img class="print-chart" id="img-ch-missed"></div></div>
     </div>
   </div>
   <div class="grid-2">
@@ -548,7 +653,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">E1 — SME Challenges Chart</div></div><span class="card-badge bg-green">E1</span></div>
-      <div class="card-body"><div class="ch-wrap tall"><canvas id="ch-sme"></canvas></div></div>
+      <div class="card-body"><div class="ch-wrap tall"><canvas id="ch-sme"></canvas><img class="print-chart" id="img-ch-sme"></div></div>
     </div>
   </div>
 </div>
@@ -559,7 +664,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
   <div class="grid-2">
     <div class="card">
       <div class="card-head"><div><div class="card-title">G1 — Re-elect Ruto?</div></div><span class="card-badge bg-red">G1</span></div>
-      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-ruto"></canvas></div></div>
+      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-ruto"></canvas><img class="print-chart" id="img-ch-ruto"></div></div>
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">G1.1 — Preferred Presidential Candidate</div><div class="card-sub">Named by respondents who said No to Ruto</div></div><span class="card-badge bg-red">G1.1</span></div>
@@ -569,7 +674,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
   <div class="grid-2">
     <div class="card">
       <div class="card-head"><div><div class="card-title">G2 — Governor Voting Intention</div></div><span class="card-badge bg-red">G2</span></div>
-      <div class="card-body"><div class="ch-wrap"><canvas id="ch-gov-s"></canvas></div><div class="legend" id="legend-gov-s"></div></div>
+      <div class="card-body"><div class="ch-wrap"><canvas id="ch-gov-s"></canvas><img class="print-chart" id="img-ch-gov-s"></div><div class="legend" id="legend-gov-s"></div></div>
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">G2 — Governor Other (named)</div><div class="card-sub">Names entered when "Other" was selected</div></div><span class="card-badge bg-plum">G2-Other</span></div>
@@ -593,7 +698,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">I — Follow-Up Consent</div><div class="card-sub">Optional contact consent</div></div><span class="card-badge bg-plum">I</span></div>
-      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-followup"></canvas></div></div>
+      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-followup"></canvas><img class="print-chart" id="img-ch-followup"></div></div>
     </div>
   </div>
   <div class="grid-3">
@@ -637,7 +742,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
     <div class="card">
       <div class="card-head"><div><div class="card-title">H1 — Office That Contributed Most to Development</div><div class="card-sub">Includes "None" response option</div></div><span class="card-badge bg-green">H1</span></div>
       <div class="card-body">
-        <div class="ch-wrap tall"><canvas id="ch-devoffice"></canvas></div>
+        <div class="ch-wrap tall"><canvas id="ch-devoffice"></canvas><img class="print-chart" id="img-ch-devoffice"></div>
         <div class="legend" id="legend-devoffice"></div>
       </div>
     </div>
@@ -649,11 +754,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
   <div class="grid-2">
     <div class="card">
       <div class="card-head"><div><div class="card-title">H2 — Frequency of Worship Attendance</div></div><span class="card-badge bg-gold">H2</span></div>
-      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-worship"></canvas></div><div class="hbar-list" style="margin-top:12px" id="hbar-worship"></div></div>
+      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-worship"></canvas><img class="print-chart" id="img-ch-worship"></div><div class="hbar-list" style="margin-top:12px" id="hbar-worship"></div></div>
     </div>
     <div class="card">
       <div class="card-head"><div><div class="card-title">Enumerator Declarations</div></div><span class="card-badge bg-green">Decl</span></div>
-      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-decl"></canvas></div></div>
+      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-decl"></canvas><img class="print-chart" id="img-ch-decl"></div></div>
     </div>
   </div>
   <div class="grid-2">
@@ -759,7 +864,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
     <div class="card-head" style="padding-bottom:14px;">
       <div><div class="card-title">Contact Directory</div><div class="card-sub">All contacts from responses (consent = Yes shown first)</div></div>
       <div style="display:flex;gap:8px;margin-top:4px;">
-        <button class="tbtn" style="font-size:12px;padding:6px 12px;" onclick="exportContactsExcel()">⬇ Export Contacts</button>
+        <button class="tbtn" style="font-size:12px;padding:6px 12px;color:var(--ink);border-color:var(--border);background:#fff;" onclick="exportContactsExcel()">⬇ Export Contacts</button>
       </div>
     </div>
     <div class="card-body">
@@ -779,7 +884,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
 <div class="tab-content" id="tab-report">
   <div class="report-wrap">
     <div class="report-actions">
-      <button class="tbtn" onclick="window.print()">🖨 Print</button>
+      <button class="tbtn" style="color:var(--ink);border-color:var(--border);background:#fff;" onclick="openPrintModal()">🖨 Print with Charts</button>
+      <button class="tbtn" style="color:var(--ink);border-color:var(--border);background:#fff;" onclick="printReportOnly()">📄 Print Report Only</button>
       <button class="tbtn primary" onclick="exportExcel()">⬇ Export Excel</button>
     </div>
     <div class="report-doc" id="reportDoc">
@@ -841,7 +947,7 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 const auth=firebase.auth();
 
-const ADMIN_EMAILS=["admin@visiontrack.co.ke","supervisor@embu.go.ke","bettemanuel49@gmail.com"];
+const ADMIN_EMAILS=["admin@visiontrack.co.ke","supervisor@embu.go.ke","bettemanuel49@gmail.com","senatorkivuti@gmail.com","nicholaskasanga2@gmail.com"];
 
 async function adminGoogleSignIn(){
   const btn=document.getElementById('googleSignInBtn'),spin=document.getElementById('loginSpinner'),txt=document.getElementById('loginBtnTxt'),err=document.getElementById('lerr');
@@ -917,7 +1023,6 @@ function normalizeOcc(val){
   return val.length>40?val.slice(0,38)+'…':val.trim();
 }
 
-/* Strip "1. " / "2. " numbering prefix from project text fields */
 function stripProjPrefix(text){
   if(!text)return'';
   return text.split('\n').map(l=>l.replace(/^\d+[\.\)]\s*/,'')).join(' ');
@@ -927,21 +1032,17 @@ function cleanCandFreq(field){
   const f={};data.forEach(d=>{const vv=d[field];if(vv&&vv!=='__other__'&&vv.trim())f[vv]=(f[vv]||0)+1;});return f;
 }
 
-/* ══════════ FETCH — responses + contacts ══════════ */
+/* ══════════ FETCH ══════════ */
 async function fetchData(){
   document.getElementById('loadingOverlay').style.display='flex';
   document.getElementById('loadMsg').textContent='Connecting to Firebase…';
   try{
-    /* Fetch responses */
     document.getElementById('loadMsg').textContent='Loading survey responses…';
     const snap=await db.collection('responses').orderBy('_submittedAt','desc').get();
     rawData=snap.docs.map((d,i)=>({_id:d.id,_idx:i+1,...d.data()}));
-
-    /* Fetch contacts separately */
     document.getElementById('loadMsg').textContent='Loading contact records…';
     const cSnap=await db.collection('contacts').orderBy('_submittedAt','desc').get();
     contactsData=cSnap.docs.map(d=>({_id:d.id,...d.data()}));
-
     document.getElementById('loadMsg').textContent=`Processing ${rawData.length} responses + ${contactsData.length} contacts…`;
     await new Promise(r=>setTimeout(r,80));
     data=[...rawData];
@@ -1004,8 +1105,6 @@ function hbar(cid,entries,total,fillCls='fill-green',max=10){
 function buildAll(){
   const n=data.length;
   document.getElementById('gf-n').textContent=n;
-
-  /* Hero stats — always rawData */
   const tot=rawData.length;
   document.getElementById('hs-total').textContent=tot;
   const tod=rawData.filter(d=>{try{return d._submittedAt&&new Date(d._submittedAt).toDateString()===new Date().toDateString();}catch{return false;}}).length;
@@ -1025,8 +1124,6 @@ function buildAll(){
   document.getElementById('hs-kivuti').textContent=ki;document.getElementById('hs-kivuti-p').textContent=pct(ki,tot)+'%';
   const gpsc=rawData.filter(d=>d._gpsLat&&!d._gpsSkipped).length;
   document.getElementById('hs-gps').textContent=gpsc;document.getElementById('hs-gps-p').textContent=pct(gpsc,tot)+'%';
-
-  /* Contacts hero */
   const ctTotal=contactsData.length;
   const ctConsent=contactsData.filter(d=>d.followUp==='Yes').length;
   document.getElementById('hs-contacts').textContent=ctTotal;
@@ -1114,7 +1211,6 @@ function buildGovernance(){
   mkChart('ch-missed',{type:'bar',data:{labels:['Yes','No'],datasets:[{data:[mpf.Yes||0,mpf.No||0],backgroundColor:['#b83232','#1a4a2a'],borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#ede8df'}}}}});
   const pm={};
   data.forEach(d=>{
-    /* Strip leading "1. " or "2. " numbering before categorising */
     const raw=(d.needs||'');
     const lines=raw.split('\n').map(l=>l.replace(/^\d+[\.\)]\s*/,'').trim()).filter(Boolean);
     lines.forEach((line,idx)=>{const sc=Math.max(3-idx,1);const th=catNeed(line);pm[th]=(pm[th]||0)+sc;});
@@ -1125,7 +1221,6 @@ function buildGovernance(){
   let ht=`<thead><tr><th>Constituency</th>${PERF_ORDER.map(p=>`<th>${p}</th>`).join('')}<th>Mean</th><th>N</th></tr></thead><tbody>`;
   CONSTITS.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;const m=meanScore(sub,'performance',PERF_SCORE);ht+=`<tr><td>${c}</td>${PERF_ORDER.map(p=>`<td>${pct(sub.filter(d=>d.performance===p).length,sub.length)}%</td>`).join('')}<td style="color:var(--leaf);font-weight:600">${m.toFixed(2)}</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
   ht+='</tbody>';document.getElementById('xtab-perf-const').innerHTML=ht;
-  /* Word clouds — strip numbering prefixes */
   wordCloud('wc-projects-del',data.map(d=>stripProjPrefix(d.projectsDelivered)).filter(Boolean));
   wordCloud('wc-projects-miss',data.map(d=>stripProjPrefix(d.projectsMissing)).filter(Boolean));
 }
@@ -1227,7 +1322,6 @@ function buildCrosstab(){
 /* ═══ QUALITATIVE ═══ */
 function buildQualitative(){
   const n=data.length;
-  /* Strip numbering from needs/projects before word cloud */
   wordCloud('wc-needs',data.map(d=>stripProjPrefix(d.needs)).filter(Boolean));
   wordCloud('wc-advice-mbarire',data.map(d=>d.adviceMbarire).filter(Boolean));
   wordCloud('wc-proj-del-q',data.map(d=>stripProjPrefix(d.projectsDelivered)).filter(Boolean));
@@ -1294,7 +1388,6 @@ function renderContactsTable(){
       </tr>`;
     }).join('');
   }
-  /* Pager */
   const pages=Math.ceil(total/CONTACTS_PER_PAGE);
   const pager=document.getElementById('contactsPager');
   pager.innerHTML=`
@@ -1312,11 +1405,109 @@ function exportContactsExcel(){
     rows.push([i+1,d.contactName||'',d.contactPhone||'',d.followUp||'',d._researcher||'',d._researcherLogin||'',d._submittedAt||'',d._respondentId||'']);
   });
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Contacts');
-  /* Summary stats */
   const sum=[['CONTACTS SUMMARY',''],['Total Contacts',contactsData.length],['Consented (Yes)',contactsData.filter(d=>d.followUp==='Yes').length],['Not Consented (No)',contactsData.filter(d=>d.followUp==='No').length],['With Phone Number',contactsData.filter(d=>d.contactPhone&&d.contactPhone.trim()).length],['With Name',contactsData.filter(d=>d.contactName&&d.contactName.trim()).length],['Exported On',new Date().toLocaleString()]];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sum),'Summary');
   XLSX.writeFile(wb,`ecs2026_contacts_${stamp}.xlsx`);
   toast(`✓ Contacts exported — ${contactsData.length} records`,'#1a4a2a');
+}
+
+/* ══════════════════════════════════════════════
+   PRINT SYSTEM — FULLY FIXED
+══════════════════════════════════════════════ */
+let _printMode='report';
+
+function openPrintModal(){
+  if(!data.length){toast('No data loaded yet','#b83232');return;}
+  document.getElementById('printModal').classList.add('open');
+}
+function closePrintModal(){
+  document.getElementById('printModal').classList.remove('open');
+}
+function selectPrintOpt(mode){
+  _printMode=mode;
+  document.querySelectorAll('.pm-opt').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('popt-'+mode).classList.add('selected');
+}
+
+/* FIX 1: Use data-for attribute instead of ID to avoid duplicates across multiple print sessions */
+function snapshotCharts(){
+  const detail=document.getElementById('pp-detail');
+  let count=0;
+  for(const [id,chart] of Object.entries(charts)){
+    try{
+      const canvas=chart.canvas;
+      if(!canvas)continue;
+      /* FIX: look up by data-for, not by hard-coded img ID */
+      let img=canvas.parentNode.querySelector(`img.print-chart[data-for="${id}"]`);
+      if(!img){
+        img=document.createElement('img');
+        img.className='print-chart';
+        img.dataset.for=id;
+        img.style.display='none';
+        canvas.parentNode.insertBefore(img,canvas.nextSibling);
+      }
+      const dataUrl=canvas.toDataURL('image/png',1.0);
+      /* FIX: only store if the canvas actually has content (not blank white) */
+      if(dataUrl&&dataUrl!=='data:,'){
+        img.src=dataUrl;
+        img.style.width='100%';
+        img.style.height='auto';
+        count++;
+      }
+      if(detail)detail.textContent=`Captured ${count} charts…`;
+    }catch(e){console.warn('Could not snapshot chart',id,e);}
+  }
+  return count;
+}
+
+/* FIX 2: Proper async sequencing — show tabs → resize charts → wait for real paint → snapshot → print */
+async function executePrint(){
+  closePrintModal();
+  const prog=document.getElementById('printProgress');
+  prog.classList.add('open');
+  document.getElementById('pp-detail').textContent='Showing all tabs…';
+
+  /* Step 1 — make every tab-content visible so canvases have real dimensions */
+  document.querySelectorAll('.tab-content').forEach(el=>{el.style.display='block';});
+
+  /* Step 2 — tell Chart.js to resize all charts now that canvases are visible */
+  Object.values(charts).forEach(c=>{try{c.resize();}catch(e){}});
+
+  /* Step 3 — wait for TWO animation frames (guarantees an actual browser paint) */
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+  /* Step 4 — build report HTML if needed */
+  if(_printMode==='report'||_printMode==='charts'||_printMode==='all'){
+    buildReport();
+    /* wait for report DOM to render */
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  }
+
+  /* Step 5 — snapshot all charts to paired <img> elements */
+  document.getElementById('pp-detail').textContent='Converting charts to images…';
+  await new Promise(r=>setTimeout(r,80));
+  const n=snapshotCharts();
+  document.getElementById('pp-detail').textContent=`${n} charts captured. Opening print dialog…`;
+  await new Promise(r=>setTimeout(r,300));
+
+  prog.classList.remove('open');
+  window.print();
+  /* FIX 3: Tab restore is handled by the afterprint event below — NOT here */
+}
+
+/* FIX 3: Restore hidden tabs AFTER the print dialog closes, not immediately after window.print() */
+window.addEventListener('afterprint',function(){
+  document.querySelectorAll('.tab-content').forEach(el=>{
+    if(!el.classList.contains('active'))el.style.display='';
+  });
+});
+
+/* Quick "Report Only" print — no chart capture needed */
+function printReportOnly(){
+  if(!data.length){toast('No data loaded','#b83232');return;}
+  buildReport();
+  _printMode='report';
+  window.print();
 }
 
 /* ═══ WORD CLOUD ═══ */
@@ -1364,7 +1555,7 @@ function buildInsight(){
 
 /* ═══ TABS ═══ */
 function switchTab(id,el){
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>{t.classList.remove('active');t.style.display='';});
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   if(el)el.classList.add('active');
@@ -1381,7 +1572,7 @@ function buildReport(){
   document.getElementById('r-filter-lbl').textContent=parts.length?parts.join(' · '):'All Respondents';
   const gF=freq(data,'gender'),ageF=freq(data,'age'),conF=freq(data,'constituency'),wardF=freq(data,'ward');
   const eduF=freq(data,'education'),empF=freq(data,'employment'),vF=freq(data,'voter');
-  const perfF=freq(data,'performance'),govF=freq(data,'governor'),partyF=freq(data,'party');
+  const perfF=freq(data,'performance'),govF=freq(data,'governor'),partyF2=freq(data,'party');
   const rutoF=freq(data,'reelectRuto'),devOF=freq(data,'devOffice'),worF=freq(data,'worship');
   const pAwareF=freq(data,'projectsAware'),missF=freq(data,'missedPromises'),fupF=freq(data,'followUp');
   const nDelF=freqMulti(data,'notDelivered'),infoF=freqMulti(data,'infoSources');
@@ -1438,7 +1629,7 @@ function buildReport(){
     <h3>D2 — Aware of Delivered Projects?</h3>${ftbl(pAwareF,n,'Response')}
     <h3>D3 — Promises Not Delivered?</h3>${ftbl(missF,n,'Response')}
     <h3>D4 — Top Priority Needs (Weighted)</h3>
-    ${(()=>{const pm={};data.forEach(d=>{const lines=stripProjPrefix(d.needs||'').split(' ').filter(Boolean);/* re-parse from original */const raw=(d.needs||'').split('\n').map(l=>l.replace(/^\d+[\.\)]\s*/,'').trim()).filter(Boolean);raw.forEach((line,idx)=>{const sc=Math.max(3-idx,1);const th=catNeed(line);pm[th]=(pm[th]||0)+sc;});});return`<table class="r-table"><thead><tr><th>Rank</th><th>Priority Need</th><th>Weighted Score</th></tr></thead><tbody>${Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([l,s],i)=>`<tr><td class="num">#${i+1}</td><td>${esc(l)}</td><td class="num">${s}</td></tr>`).join('')}</tbody></table>`;})()}`;
+    ${(()=>{const pm={};data.forEach(d=>{const raw=(d.needs||'').split('\n').map(l=>l.replace(/^\d+[\.\)]\s*/,'').trim()).filter(Boolean);raw.forEach((line,idx)=>{const sc=Math.max(3-idx,1);const th=catNeed(line);pm[th]=(pm[th]||0)+sc;});});return`<table class="r-table"><thead><tr><th>Rank</th><th>Priority Need</th><th>Weighted Score</th></tr></thead><tbody>${Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([l,s],i)=>`<tr><td class="num">#${i+1}</td><td>${esc(l)}</td><td class="num">${s}</td></tr>`).join('')}</tbody></table>`;})()}`;
 
   document.getElementById('r-eco-content').innerHTML=`<h3>E1 — SME Challenges</h3>${ftbl(smeF,n,'Challenge')}`;
 
@@ -1449,7 +1640,7 @@ function buildReport(){
     <h3>G1.1 — Preferred Presidential Candidate (No-to-Ruto respondents)</h3>${ftbl(ppf,rutoF.No||1,'Candidate')}
     <h3>G2 — Governor Voting Intention</h3>${ftbl(govF,n,'Candidate')}
     ${Object.keys(govOtherF).length?`<h3>G2 — "Other" Governor Named</h3>${ftbl(govOtherF,govF.Other||1,'Named Candidate')}`:''}
-    <h3>G3 — Party Preference</h3>${ftbl(partyF,n,'Party')}
+    <h3>G3 — Party Preference</h3>${ftbl(partyF2,n,'Party')}
     <h3>G4 — Reasons FOR Voting (Governor)</h3>${ftbl(vrF,n,'Reason')}
     <h3>G5 — Reasons AGAINST Mbarire</h3>${ftbl(antiMbF,n,'Reason')}
     <h3>G7 — Reasons AGAINST Kivuti</h3>${ftbl(antiKvF,n,'Reason')}
@@ -1517,7 +1708,7 @@ function buildReport(){
     </ul>`;
 }
 
-/* ═══ EXCEL EXPORT (responses) ═══ */
+/* ═══ EXCEL EXPORT ═══ */
 function exportExcel(){
   if(!data.length)return toast('No data loaded','#b83232');
   const stamp=new Date().toISOString().slice(0,10);
@@ -1529,14 +1720,14 @@ function exportExcel(){
   const ppf={};data.forEach(d=>{const vv=(d.preferredPres||'').trim();if(vv&&d.reelectRuto==='No')ppf[vv]=(ppf[vv]||0)+1;});
   const govOtherF={};data.forEach(d=>{if(d.governor==='Other'&&d.governorOther&&d.governorOther.trim()){const k=d.governorOther.trim();govOtherF[k]=(govOtherF[k]||0)+1;}});
   const fupF=freq(data,'followUp');
+  const partyF3=freq(data,'party');
   addSh('Demographics',[['ECS-2026 DEMOGRAPHICS',`N=${n}`,stamp],[],['A1 GENDER'],...rows(freq(data,'gender'),'Gender'),[],['A5 AGE'],...rows(freq(data,'age'),'Age Group'),[],['A2 CONSTITUENCY'],...rows(freq(data,'constituency'),'Constituency'),[],['A3 WARD'],...rows(freq(data,'ward'),'Ward'),[],['A6 EDUCATION'],...rows(freq(data,'education'),'Education'),[],['A7 EMPLOYMENT'],...rows(freq(data,'employment'),'Employment'),[],['A8 OCCUPATION (Normalized)'],...rows(occF,'Occupation Category')]);
   addSh('Political-B',[['SECTION B'],[],['B1 VOTER REGISTRATION'],...rows(freq(data,'voter'),'Registered?'),[],['B2 NOT DELIVERED (multi-select)'],...rows(freqMulti(data,'notDelivered'),'Sector')]);
   addSh('Information-C',[['SECTION C'],[],['C1 INFORMATION SOURCES'],...rows(freqMulti(data,'infoSources'),'Source')]);
   addSh('Governance-D',[['SECTION D'],[],['D1 PERFORMANCE'],...rows(freq(data,'performance'),'Rating'),[],['D2 AWARE OF PROJECTS'],...rows(freq(data,'projectsAware'),'Response'),[],['D3 MISSED PROMISES'],...rows(freq(data,'missedPromises'),'Response')]);
   addSh('Economics-E',[['SECTION E'],[],['E1 SME CHALLENGES (multi-select)'],...rows(freqMulti(data,'smeChallenges'),'Challenge')]);
-  addSh('Sentiment-G',[['SECTION G'],[],['G1 RE-ELECT RUTO'],...rows(freq(data,'reelectRuto'),'Response'),[],['G1.1 PREFERRED PRESIDENT (No-to-Ruto only)'],...rows(ppf,'Candidate'),[],['G2 GOVERNOR INTENTION'],...rows(freq(data,'governor'),'Candidate'),[],['G2 GOVERNOR OTHER (named)'],...rows(govOtherF,'Named Candidate'),[],['G3 PARTY PREFERENCE'],...rows(partyF=freq(data,'party'),'Party'),[],['G4 VOTE REASONS (multi)'],...rows(freqMulti(data,'voteReasons'),'Reason'),[],['G5 ANTI-MBARIRE (multi)'],...rows(freqMulti(data,'notMbarire'),'Reason'),[],['G7 ANTI-KIVUTI (multi)'],...rows(freqMulti(data,'notKivuti'),'Reason'),[],['G8 ANTI-GITONGA (multi)'],...rows(freqMulti(data,'notGitonga'),'Reason'),[],['G9 SENATOR (cleaned)'],...rows(cleanCandFreq('prefSenator'),'Candidate'),[],['G9 WOMEN REP (cleaned)'],...rows(cleanCandFreq('prefWomenRep'),'Candidate'),[],['G9 MP (cleaned)'],...rows(cleanCandFreq('prefMP'),'Candidate'),[],['G9 MCA (cleaned)'],...rows(cleanCandFreq('prefMCA'),'Candidate'),[],['I FOLLOW-UP CONSENT (responses)'],...rows(fupF,'Response')]);
+  addSh('Sentiment-G',[['SECTION G'],[],['G1 RE-ELECT RUTO'],...rows(freq(data,'reelectRuto'),'Response'),[],['G1.1 PREFERRED PRESIDENT (No-to-Ruto only)'],...rows(ppf,'Candidate'),[],['G2 GOVERNOR INTENTION'],...rows(freq(data,'governor'),'Candidate'),[],['G2 GOVERNOR OTHER (named)'],...rows(govOtherF,'Named Candidate'),[],['G3 PARTY PREFERENCE'],...rows(partyF3,'Party'),[],['G4 VOTE REASONS (multi)'],...rows(freqMulti(data,'voteReasons'),'Reason'),[],['G5 ANTI-MBARIRE (multi)'],...rows(freqMulti(data,'notMbarire'),'Reason'),[],['G7 ANTI-KIVUTI (multi)'],...rows(freqMulti(data,'notKivuti'),'Reason'),[],['G8 ANTI-GITONGA (multi)'],...rows(freqMulti(data,'notGitonga'),'Reason'),[],['G9 SENATOR (cleaned)'],...rows(cleanCandFreq('prefSenator'),'Candidate'),[],['G9 WOMEN REP (cleaned)'],...rows(cleanCandFreq('prefWomenRep'),'Candidate'),[],['G9 MP (cleaned)'],...rows(cleanCandFreq('prefMP'),'Candidate'),[],['G9 MCA (cleaned)'],...rows(cleanCandFreq('prefMCA'),'Candidate'),[],['I FOLLOW-UP CONSENT (responses)'],...rows(fupF,'Response')]);
   addSh('Community-H',[['SECTION H'],[],['H1 DEV OFFICE (all options incl. None)'],...rows(freq(data,'devOffice'),'Office'),[],['H2 WORSHIP'],...rows(freq(data,'worship'),'Frequency')]);
-  /* Contacts sheet */
   const ctRows=[['#','Full Name','Phone Number','Follow-up Consent','Researcher','Researcher Login','Submitted At','Respondent ID']];
   contactsData.forEach((d,i)=>ctRows.push([i+1,d.contactName||'',d.contactPhone||'',d.followUp||'',d._researcher||'',d._researcherLogin||'',d._submittedAt||'',d._respondentId||'']));
   addSh('Contacts-I',ctRows);
@@ -1552,8 +1743,8 @@ function exportExcel(){
 let tt;
 function toast(msg,bg='#0c1a0e'){const el=document.getElementById('toast');el.textContent=msg;el.style.background=bg;el.style.transform='translateY(0)';el.style.opacity='1';clearTimeout(tt);tt=setTimeout(()=>{el.style.transform='translateY(80px)';el.style.opacity='0';},3500);}
 
-/* fix: partyF scoped correctly in exportExcel */
-let partyF={};
+/* Close modal on backdrop click */
+document.getElementById('printModal').addEventListener('click',function(e){if(e.target===this)closePrintModal();});
 </script>
 </body>
 </html>
