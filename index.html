@@ -1024,7 +1024,7 @@ const ADMIN_EMAILS = [
   "bettemanuel49@gmail.com",
   "senatorkivuti@gmail.com",
   "nicholaskasanga2@gmail.com",
-  "kiiondwiga@gmail.com",
+  "Kiiondwiga@gmail.com",
   "janekarimifaith@gmail.com",
 ];
 
@@ -1448,7 +1448,7 @@ function buildCrosstab(){
   GOV_CANDS.forEach(g=>{const sub=data.filter(d=>d.governor===g);if(!sub.length)return;const m=meanScore(sub,'performance',PERF_SCORE);ht+=`<tr><td>${esc(g)}</td>${PERF_ORDER.map(p=>`<td>${pct(sub.filter(d=>d.performance===p).length,sub.length)}%</td>`).join('')}<td style="color:var(--leaf);font-weight:600">${m.toFixed(2)}</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
   ht+='</tbody>';document.getElementById('xtab-gov-perf').innerHTML=ht;
   ht=`<thead><tr><th>Constituency</th><th>Re-elect Yes %</th><th>Re-elect No %</th><th>N</th></tr></thead><tbody>`;
-  CONSTITS.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;const y=sub.filter(d=>d.reelectRuto==='Yes').length;ht+=`<tr><td>${c}</td><td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="width:${pct(y,sub.length)}%;background:var(--red)"></div></div>${pct(y,sub.length)}%</div></td><td>${pct(sub.length-y,sub.length)}%</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
+  CONSTITS.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;const y=sub.filter(d=>d.reelectRuto==='Yes').length;ht+=`<tr><td>${c}</td><td>${pct(y,sub.length)}%</td><td>${pct(sub.length-y,sub.length)}%</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
   ht+='</tbody>';document.getElementById('xtab-ruto-const').innerHTML=ht;
   ht=`<thead><tr><th>Constituency</th>${PARTIES.slice(0,4).map(p=>`<th>${p}</th>`).join('')}<th>Other</th><th>N</th></tr></thead><tbody>`;
   CONSTITS.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;ht+=`<tr><td>${c}</td>${PARTIES.slice(0,4).map(p=>`<td>${pct(sub.filter(d=>d.party===p).length,sub.length)}%</td>`).join('')}<td>${pct(sub.filter(d=>d.party&&!PARTIES.slice(0,4).includes(d.party)).length,sub.length)}%</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
