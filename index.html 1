@@ -169,6 +169,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
 .word-pill{border-radius:20px;padding:4px 12px;cursor:default;transition:transform .15s;white-space:nowrap;}
 .word-pill:hover{transform:scale(1.05);}
 
+/* ── ADVICE QUOTES ── */
+.advice-feed{display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;}
+.advice-card{background:var(--warm);border-left:3px solid var(--leaf);border-radius:0 var(--r) var(--r) 0;padding:11px 14px;font-size:13px;color:var(--ink);line-height:1.6;}
+.advice-card.gold{border-left-color:var(--gold);}
+.advice-card.red{border-left-color:var(--red);}
+.advice-card.sky{border-left-color:var(--sky);}
+.advice-meta{font-size:10px;color:var(--muted2);margin-top:4px;font-style:italic;}
+.advice-empty{font-size:13px;color:var(--muted2);font-style:italic;padding:16px 0;}
+
 /* ── PRIORITY LIST ── */
 .pr-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--warm);}
 .pr-row:last-child{border-bottom:none;}
@@ -282,41 +291,29 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:va
 @media(max-width:900px){.grid-3,.grid-4{grid-template-columns:1fr 1fr;}.hero-stats{grid-template-columns:repeat(4,1fr);}.page{padding:16px 16px 40px;}.span2,.span3{grid-column:span 1;}}
 @media(max-width:640px){.hero-stats{grid-template-columns:repeat(2,1fr);}.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
 
-/* ══ PRINT STYLES ══ */
 @media print{
   .topbar,.tabs-bar,.hero-stats,.filter-bar,.report-actions,
   #printModal,#printProgress,#toast,.contacts-pager,
   .tbtn{display:none!important;}
-
   body{background:#fff!important;font-size:12pt;}
   .page{padding:0!important;max-width:100%!important;}
-
   .tab-content{display:block!important;}
   .tab-content + .tab-content{page-break-before:always;}
-
   .card{page-break-inside:avoid;border:1px solid #ccc!important;border-radius:6px!important;}
   .grid-2,.grid-3,.grid-4{display:block!important;}
   .grid-2 .card,.grid-3 .card,.grid-4 .card{margin-bottom:16px;}
-
-  /* FIX: Hide canvases, show print-chart images */
   canvas{display:none!important;}
   img.print-chart{display:block!important;max-width:100%;height:auto;}
-
-  /* FIX: Hide blank/failed snapshots */
   img.print-chart:not([src]){display:none!important;}
   img.print-chart[src=""]{display:none!important;}
-
   .report-doc{border:none!important;padding:0!important;}
   .r-finding{background:#1a4a2a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .r-table th{background:#1a4a2a!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-
   .print-section-header{display:block!important;}
 }
-
 .print-section-header{display:none;}
 img.print-chart{display:none;}
 
-/* TOAST */
 #toast{position:fixed;bottom:22px;right:22px;padding:11px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:var(--sh);transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:600;color:#fff;}
 </style>
 </head>
@@ -355,28 +352,19 @@ img.print-chart{display:none;}
 <div id="printModal">
   <div class="pm-card">
     <div class="pm-title">🖨 Print / Export</div>
-    <div class="pm-sub">Choose what to include in your printed document. Charts will be captured as images so they appear correctly in print.</div>
+    <div class="pm-sub">Choose what to include in your printed document.</div>
     <div class="pm-options">
       <div class="pm-opt selected" id="popt-report" onclick="selectPrintOpt('report')">
         <div class="pm-opt-icon">📄</div>
-        <div>
-          <div class="pm-opt-label">Report Only</div>
-          <div class="pm-opt-desc">Print the full analytical report with tables and findings</div>
-        </div>
+        <div><div class="pm-opt-label">Report Only</div><div class="pm-opt-desc">Print the full analytical report with tables and findings</div></div>
       </div>
       <div class="pm-opt" id="popt-charts" onclick="selectPrintOpt('charts')">
         <div class="pm-opt-icon">📊</div>
-        <div>
-          <div class="pm-opt-label">Charts + Report</div>
-          <div class="pm-opt-desc">Include all charts and graphs alongside the report (recommended)</div>
-        </div>
+        <div><div class="pm-opt-label">Charts + Report</div><div class="pm-opt-desc">Include all charts alongside the report (recommended)</div></div>
       </div>
       <div class="pm-opt" id="popt-all" onclick="selectPrintOpt('all')">
         <div class="pm-opt-icon">📋</div>
-        <div>
-          <div class="pm-opt-label">Full Dashboard</div>
-          <div class="pm-opt-desc">Print every tab — Demographics, Political, Governance, Sentiment, and Report</div>
-        </div>
+        <div><div class="pm-opt-label">Full Dashboard</div><div class="pm-opt-desc">Print every tab including Advice &amp; Sentiment</div></div>
       </div>
     </div>
     <div class="pm-actions">
@@ -420,6 +408,7 @@ img.print-chart{display:none;}
   <div class="tab" data-tab="governance"          onclick="switchTab('governance',this)">D — Governance</div>
   <div class="tab" data-tab="economics"           onclick="switchTab('economics',this)">E — SMEs</div>
   <div class="tab" data-tab="sentiment"           onclick="switchTab('sentiment',this)">G — Sentiment</div>
+  <div class="tab" data-tab="advice"              onclick="switchTab('advice',this)">💬 Advice</div>
   <div class="tab" data-tab="community"           onclick="switchTab('community',this)">H — Community</div>
   <div class="tab" data-tab="crosstab"            onclick="switchTab('crosstab',this)">Cross-Tab</div>
   <div class="tab" data-tab="qualitative"         onclick="switchTab('qualitative',this)">Qualitative</div>
@@ -449,12 +438,15 @@ img.print-chart{display:none;}
     <option value="">All Constituencies</option>
     <option>Manyatta</option><option>Runyenjes</option><option>Mbeere North</option><option>Mbeere South</option>
   </select>
-  <select class="fsel" id="gf-ward" onchange="recomputeAll()">
+  <select class="fsel" id="gf-ward" onchange="onWardFilterChange()">
     <option value="">All Wards</option>
     <optgroup label="Manyatta"><option>Ruguru/Ngandori</option><option>Kithimu</option><option>Nginda</option><option>Mbeti North</option><option>Kirimari</option><option>Gaturi South</option></optgroup>
     <optgroup label="Runyenjes"><option>Gaturi North</option><option>Kagaari South</option><option>Kagaari North</option><option>Central Ward</option><option>Kyeni North</option><option>Kyeni South</option></optgroup>
     <optgroup label="Mbeere South"><option>Mwea</option><option>Makima</option><option>Mbeti South</option><option>Mavuria</option><option>Kiambere</option></optgroup>
     <optgroup label="Mbeere North"><option>Nthawa</option><option>Muminji</option><option>Evurore</option></optgroup>
+  </select>
+  <select class="fsel" id="gf-pollingstation" onchange="recomputeAll()">
+    <option value="">All Polling Stations</option>
   </select>
   <select class="fsel" id="gf-gender" onchange="recomputeAll()">
     <option value="">All Genders</option><option>Male</option><option>Female</option>
@@ -562,6 +554,12 @@ img.print-chart{display:none;}
       <div class="card-body"><div class="hbar-list" id="hbar-researchers"></div></div>
     </div>
   </div>
+  <div class="grid-2">
+    <div class="card span2">
+      <div class="card-head"><div><div class="card-title">Coverage by Polling Station</div><div class="card-sub">Response count per polling station within current filter scope · top 15</div></div><span class="card-badge bg-plum">A4</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-pollingstation"></div></div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ POLITICAL (B) ═══ -->
@@ -579,7 +577,7 @@ img.print-chart{display:none;}
       </div>
     </div>
     <div class="card span2">
-      <div class="card-head"><div><div class="card-title">B2 — Areas Government Has NOT Delivered</div><div class="card-sub">Multi-select (% of respondents who ticked each)</div></div><span class="card-badge bg-red">B2</span></div>
+      <div class="card-head"><div><div class="card-title">B2 — Areas Government Has NOT Delivered</div><div class="card-sub">Multi-select (% of respondents)</div></div><span class="card-badge bg-red">B2</span></div>
       <div class="card-body"><div class="hbar-list" id="hbar-notdel"></div></div>
     </div>
     <div class="card">
@@ -594,7 +592,7 @@ img.print-chart{display:none;}
   <div class="section-label">Section C — Political Information &amp; Transparency</div>
   <div class="grid-2">
     <div class="card">
-      <div class="card-head"><div><div class="card-title">C1 — Information Sources</div><div class="card-sub">How respondents get political information (multi-select)</div></div><span class="card-badge bg-green">C1</span></div>
+      <div class="card-head"><div><div class="card-title">C1 — Information Sources</div><div class="card-sub">Multi-select</div></div><span class="card-badge bg-green">C1</span></div>
       <div class="card-body"><div class="hbar-list" id="hbar-info"></div></div>
     </div>
     <div class="card">
@@ -623,7 +621,7 @@ img.print-chart{display:none;}
   </div>
   <div class="grid-2">
     <div class="card">
-      <div class="card-head"><div><div class="card-title">D4 — Top Priority Needs</div><div class="card-sub">Weighted score: Rank 1 = 3 pts, Rank 2 = 1 pt</div></div><span class="card-badge bg-red">D4</span></div>
+      <div class="card-head"><div><div class="card-title">D4 — Top Priority Needs</div><div class="card-sub">Weighted: Rank 1 = 3 pts, Rank 2 = 1 pt</div></div><span class="card-badge bg-red">D4</span></div>
       <div class="card-body"><div id="priority-list-d4"></div></div>
     </div>
     <div class="card">
@@ -677,7 +675,7 @@ img.print-chart{display:none;}
       <div class="card-body"><div class="ch-wrap"><canvas id="ch-gov-s"></canvas><img class="print-chart" id="img-ch-gov-s"></div><div class="legend" id="legend-gov-s"></div></div>
     </div>
     <div class="card">
-      <div class="card-head"><div><div class="card-title">G2 — Governor Other (named)</div><div class="card-sub">Names entered when "Other" was selected</div></div><span class="card-badge bg-plum">G2-Other</span></div>
+      <div class="card-head"><div><div class="card-title">G2 — Governor Other (named)</div><div class="card-sub">Names when "Other" was selected</div></div><span class="card-badge bg-plum">G2-Other</span></div>
       <div class="card-body"><div class="hbar-list" id="hbar-gov-other"></div></div>
     </div>
   </div>
@@ -689,16 +687,6 @@ img.print-chart{display:none;}
     <div class="card">
       <div class="card-head"><div><div class="card-title">G4 — Why Vote for Preferred Governor?</div><div class="card-sub">Multi-select</div></div><span class="card-badge bg-green">G4</span></div>
       <div class="card-body"><div class="hbar-list" id="hbar-vote-reasons"></div></div>
-    </div>
-  </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-head"><div><div class="card-title">G6 — Advice to Cecily Mbarire</div></div><span class="card-badge bg-green">G6</span></div>
-      <div class="card-body"><div class="word-cloud" id="wc-advice-mbarire-s"></div></div>
-    </div>
-    <div class="card">
-      <div class="card-head"><div><div class="card-title">I — Follow-Up Consent</div><div class="card-sub">Optional contact consent</div></div><span class="card-badge bg-plum">I</span></div>
-      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-followup"></canvas><img class="print-chart" id="img-ch-followup"></div></div>
     </div>
   </div>
   <div class="grid-3">
@@ -717,20 +705,120 @@ img.print-chart{display:none;}
   </div>
   <div class="grid-4">
     <div class="card">
-      <div class="card-head"><div><div class="card-title">G9 — Preferred Senator</div></div><span class="card-badge bg-green">G9</span></div>
+      <div class="card-head"><div><div class="card-title">G9 — Preferred Senator</div><div class="card-sub">Top picks county-wide</div></div><span class="card-badge bg-green">G9</span></div>
       <div class="card-body"><div class="hbar-list" id="hbar-senator"></div></div>
     </div>
     <div class="card">
-      <div class="card-head"><div><div class="card-title">G9 — Preferred Women Rep</div></div><span class="card-badge bg-gold">G9</span></div>
+      <div class="card-head"><div><div class="card-title">G9 — Preferred Women Rep</div><div class="card-sub">Top picks county-wide</div></div><span class="card-badge bg-gold">G9</span></div>
       <div class="card-body"><div class="hbar-list" id="hbar-womenrep"></div></div>
     </div>
     <div class="card">
-      <div class="card-head"><div><div class="card-title">G9 — Preferred MP</div></div><span class="card-badge bg-sky">G9</span></div>
+      <div class="card-head"><div><div class="card-title">G9 — Preferred MP</div><div class="card-sub">Top picks county-wide · see Qualitative tab for by-constituency view</div></div><span class="card-badge bg-sky">G9</span></div>
       <div class="card-body"><div class="hbar-list" id="hbar-mp"></div></div>
     </div>
     <div class="card">
-      <div class="card-head"><div><div class="card-title">G9 — Preferred MCA</div></div><span class="card-badge bg-plum">G9</span></div>
+      <div class="card-head"><div><div class="card-title">G9 — Preferred MCA</div><div class="card-sub">Top picks county-wide · see Qualitative tab for by-ward view</div></div><span class="card-badge bg-plum">G9</span></div>
       <div class="card-body"><div class="hbar-list" id="hbar-mca"></div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G6 — Advice to Cecily Mbarire (Word Cloud)</div></div><span class="card-badge bg-green">G6</span></div>
+      <div class="card-body"><div class="word-cloud" id="wc-advice-mbarire-s"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">I — Follow-Up Consent</div><div class="card-sub">Optional contact consent</div></div><span class="card-badge bg-plum">I</span></div>
+      <div class="card-body"><div class="ch-wrap short"><canvas id="ch-followup"></canvas><img class="print-chart" id="img-ch-followup"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADVICE TAB (NEW) ═══ -->
+<div class="tab-content" id="tab-advice">
+  <div class="section-label">💬 Advice to Leaders — Open Text Analysis</div>
+
+  <!-- G1.2 Advice to Ruto -->
+  <div class="grid-2" style="margin-bottom:20px;">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G1.2 — Advice to President William Ruto</div><div class="card-sub">Word frequency from all responses</div></div><span class="card-badge bg-red">G1.2</span></div>
+      <div class="card-body"><div class="word-cloud" id="wc-advice-ruto"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G1.2 — Ruto Advice: Top Themes</div><div class="card-sub">Most common keyword themes</div></div><span class="card-badge bg-red">G1.2</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-advice-ruto-themes"></div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-head"><div><div class="card-title">G1.2 — Sample Advice Responses to President Ruto</div><div class="card-sub">Latest 20 non-empty responses (scroll to see more)</div></div><span class="card-badge bg-red">G1.2</span></div>
+    <div class="card-body"><div class="advice-feed" id="advice-ruto-feed"></div></div>
+  </div>
+
+  <!-- G6 Advice to Mbarire -->
+  <div class="grid-2" style="margin-bottom:20px;">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G6 — Advice to Cecily Mbarire</div><div class="card-sub">Word frequency</div></div><span class="card-badge bg-green">G6</span></div>
+      <div class="card-body"><div class="word-cloud" id="wc-advice-mbarire-adv"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G6 — Mbarire Advice: Top Themes</div></div><span class="card-badge bg-green">G6</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-advice-mbarire-themes"></div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-head"><div><div class="card-title">G6 — Sample Advice Responses to Cecily Mbarire</div><div class="card-sub">Latest 20 non-empty responses</div></div><span class="card-badge bg-green">G6</span></div>
+    <div class="card-body"><div class="advice-feed" id="advice-mbarire-feed"></div></div>
+  </div>
+
+  <!-- G7.1 Advice to Kivuti -->
+  <div class="grid-2" style="margin-bottom:20px;">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G7.1 — Advice to Lenny Kivuti</div><div class="card-sub">Word frequency</div></div><span class="card-badge bg-gold">G7.1</span></div>
+      <div class="card-body"><div class="word-cloud" id="wc-advice-kivuti"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G7.1 — Kivuti Advice: Top Themes</div></div><span class="card-badge bg-gold">G7.1</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-advice-kivuti-themes"></div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-head"><div><div class="card-title">G7.1 — Sample Advice Responses to Lenny Kivuti</div><div class="card-sub">Latest 20 non-empty responses</div></div><span class="card-badge bg-gold">G7.1</span></div>
+    <div class="card-body"><div class="advice-feed" id="advice-kivuti-feed"></div></div>
+  </div>
+
+  <!-- G8.1 Advice to Mukunji -->
+  <div class="grid-2" style="margin-bottom:20px;">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G8.1 — Advice to Gitonga Mukunji</div><div class="card-sub">Word frequency</div></div><span class="card-badge bg-sky">G8.1</span></div>
+      <div class="card-body"><div class="word-cloud" id="wc-advice-mukunji"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">G8.1 — Mukunji Advice: Top Themes</div></div><span class="card-badge bg-sky">G8.1</span></div>
+      <div class="card-body"><div class="hbar-list" id="hbar-advice-mukunji-themes"></div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-head"><div><div class="card-title">G8.1 — Sample Advice Responses to Gitonga Mukunji</div><div class="card-sub">Latest 20 non-empty responses</div></div><span class="card-badge bg-sky">G8.1</span></div>
+    <div class="card-body"><div class="advice-feed" id="advice-mukunji-feed"></div></div>
+  </div>
+
+  <!-- Comparative -->
+  <div class="section-label">Comparative Advice Themes Across Candidates</div>
+  <div class="grid-4">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Responses with Ruto Advice</div></div><span class="card-badge bg-red">G1.2</span></div>
+      <div class="card-body"><div class="kpi-tile" style="background:var(--signal-l)"><div class="kpi-val" id="kpi-advice-ruto-n">—</div><div class="kpi-lbl">filled responses</div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Responses with Mbarire Advice</div></div><span class="card-badge bg-green">G6</span></div>
+      <div class="card-body"><div class="kpi-tile" style="background:var(--teal-l)"><div class="kpi-val" id="kpi-advice-mbarire-n">—</div><div class="kpi-lbl">filled responses</div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Responses with Kivuti Advice</div></div><span class="card-badge bg-gold">G7.1</span></div>
+      <div class="card-body"><div class="kpi-tile" style="background:var(--gold-l)"><div class="kpi-val" id="kpi-advice-kivuti-n">—</div><div class="kpi-lbl">filled responses</div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Responses with Mukunji Advice</div></div><span class="card-badge bg-sky">G8.1</span></div>
+      <div class="card-body"><div class="kpi-tile" style="background:var(--slate-l)"><div class="kpi-val" id="kpi-advice-mukunji-n">—</div><div class="kpi-lbl">filled responses</div></div></div>
     </div>
   </div>
 </div>
@@ -747,7 +835,7 @@ img.print-chart{display:none;}
       </div>
     </div>
     <div class="card">
-      <div class="card-head"><div><div class="card-title">H1 — Breakdown Table</div><div class="card-sub">All response options including None</div></div><span class="card-badge bg-gold">H1</span></div>
+      <div class="card-head"><div><div class="card-title">H1 — Breakdown Table</div></div><span class="card-badge bg-gold">H1</span></div>
       <div class="card-body"><div class="hbar-list" id="hbar-devoffice-full"></div></div>
     </div>
   </div>
@@ -830,12 +918,25 @@ img.print-chart{display:none;}
   <div class="grid-2">
     <div class="card"><div class="card-head"><div><div class="card-title">D4 — Ward Priority Needs</div></div><span class="card-badge bg-red">D4</span></div><div class="card-body"><div class="word-cloud" id="wc-needs"></div></div></div>
     <div class="card"><div class="card-head"><div><div class="card-title">G6 — Advice to Cecily Mbarire</div></div><span class="card-badge bg-green">G6</span></div><div class="card-body"><div class="word-cloud" id="wc-advice-mbarire"></div></div></div>
+    <div class="card"><div class="card-head"><div><div class="card-title">G1.2 — Advice to President Ruto</div></div><span class="card-badge bg-red">G1.2</span></div><div class="card-body"><div class="word-cloud" id="wc-advice-ruto-q"></div></div></div>
+    <div class="card"><div class="card-head"><div><div class="card-title">G7.1 — Advice to Lenny Kivuti</div></div><span class="card-badge bg-gold">G7.1</span></div><div class="card-body"><div class="word-cloud" id="wc-advice-kivuti-q"></div></div></div>
+    <div class="card"><div class="card-head"><div><div class="card-title">G8.1 — Advice to Gitonga Mukunji</div></div><span class="card-badge bg-sky">G8.1</span></div><div class="card-body"><div class="word-cloud" id="wc-advice-mukunji-q"></div></div></div>
     <div class="card"><div class="card-head"><div><div class="card-title">D2 — Projects Delivered (Word Freq)</div></div><span class="card-badge bg-gold">D2</span></div><div class="card-body"><div class="word-cloud" id="wc-proj-del-q"></div></div></div>
     <div class="card"><div class="card-head"><div><div class="card-title">D3 — Undelivered Projects (Word Freq)</div></div><span class="card-badge bg-sky">D3</span></div><div class="card-body"><div class="word-cloud" id="wc-proj-miss-q"></div></div></div>
     <div class="card"><div class="card-head"><div><div class="card-title">G1.1 — Preferred President (Named)</div><div class="card-sub">No-to-Ruto respondents</div></div><span class="card-badge bg-red">G1.1</span></div><div class="card-body"><div class="hbar-list" id="hbar-pref-pres-q"></div></div></div>
-    <div class="card"><div class="card-head"><div><div class="card-title">G9 — Preferred MP (by Constituency)</div></div><span class="card-badge bg-plum">G9-MP</span></div><div class="card-body"><div class="hbar-list" id="hbar-mp-q"></div></div></div>
-    <div class="card"><div class="card-head"><div><div class="card-title">G9 — Preferred MCA (by Ward)</div></div><span class="card-badge bg-green">G9-MCA</span></div><div class="card-body"><div class="hbar-list" id="hbar-mca-q"></div></div></div>
     <div class="card"><div class="card-head"><div><div class="card-title">G2 — Governor Other (Named)</div></div><span class="card-badge bg-plum">G2-Other</span></div><div class="card-body"><div class="hbar-list" id="hbar-gov-other-q"></div></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card span2">
+      <div class="card-head"><div><div class="card-title">G9 — Preferred MP, Grouped by Constituency</div><div class="card-sub">All named candidates shown — no candidate hidden, including single-mention names</div></div><span class="card-badge bg-plum">G9-MP</span></div>
+      <div class="card-body"><div id="mp-by-const-q"></div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card span2">
+      <div class="card-head"><div><div class="card-title">G9 — Preferred MCA, Grouped by Ward</div><div class="card-sub">All named candidates shown — no candidate hidden, including single-mention names</div></div><span class="card-badge bg-green">G9-MCA</span></div>
+      <div class="card-body"><div id="mca-by-ward-q"></div></div>
+    </div>
   </div>
 </div>
 
@@ -843,29 +944,15 @@ img.print-chart{display:none;}
 <div class="tab-content" id="tab-contacts">
   <div class="section-label">Section I — Contact Details (Separately Stored)</div>
   <div class="grid-4" style="margin-bottom:20px;">
-    <div class="card">
-      <div class="card-head"><div><div class="card-title">Total Contacts</div></div><span class="card-badge bg-green">Count</span></div>
-      <div class="card-body"><div class="kpi-tile" style="background:var(--teal-l)"><div class="kpi-val" id="ct-total">—</div><div class="kpi-lbl">contacts collected</div></div></div>
-    </div>
-    <div class="card">
-      <div class="card-head"><div><div class="card-title">Follow-up Consent</div></div><span class="card-badge bg-green">Consent Yes</span></div>
-      <div class="card-body"><div class="kpi-tile" style="background:var(--teal-l)"><div class="kpi-val" id="ct-consent-yes">—</div><div class="kpi-lbl">consented to follow-up</div></div></div>
-    </div>
-    <div class="card">
-      <div class="card-head"><div><div class="card-title">With Phone Numbers</div></div><span class="card-badge bg-sky">Phone</span></div>
-      <div class="card-body"><div class="kpi-tile" style="background:var(--slate-l)"><div class="kpi-val" id="ct-with-phone">—</div><div class="kpi-lbl">have phone number</div></div></div>
-    </div>
-    <div class="card">
-      <div class="card-head"><div><div class="card-title">With Full Name</div></div><span class="card-badge bg-gold">Name</span></div>
-      <div class="card-body"><div class="kpi-tile" style="background:var(--gold-l)"><div class="kpi-val" id="ct-with-name">—</div><div class="kpi-lbl">provided name</div></div></div>
-    </div>
+    <div class="card"><div class="card-head"><div><div class="card-title">Total Contacts</div></div><span class="card-badge bg-green">Count</span></div><div class="card-body"><div class="kpi-tile" style="background:var(--teal-l)"><div class="kpi-val" id="ct-total">—</div><div class="kpi-lbl">contacts collected</div></div></div></div>
+    <div class="card"><div class="card-head"><div><div class="card-title">Follow-up Consent</div></div><span class="card-badge bg-green">Consent Yes</span></div><div class="card-body"><div class="kpi-tile" style="background:var(--teal-l)"><div class="kpi-val" id="ct-consent-yes">—</div><div class="kpi-lbl">consented to follow-up</div></div></div></div>
+    <div class="card"><div class="card-head"><div><div class="card-title">With Phone Numbers</div></div><span class="card-badge bg-sky">Phone</span></div><div class="card-body"><div class="kpi-tile" style="background:var(--slate-l)"><div class="kpi-val" id="ct-with-phone">—</div><div class="kpi-lbl">have phone number</div></div></div></div>
+    <div class="card"><div class="card-head"><div><div class="card-title">With Full Name</div></div><span class="card-badge bg-gold">Name</span></div><div class="card-body"><div class="kpi-tile" style="background:var(--gold-l)"><div class="kpi-val" id="ct-with-name">—</div><div class="kpi-lbl">provided name</div></div></div></div>
   </div>
   <div class="card">
     <div class="card-head" style="padding-bottom:14px;">
-      <div><div class="card-title">Contact Directory</div><div class="card-sub">All contacts from responses (consent = Yes shown first)</div></div>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <button class="tbtn" style="font-size:12px;padding:6px 12px;color:var(--ink);border-color:var(--border);background:#fff;" onclick="exportContactsExcel()">⬇ Export Contacts</button>
-      </div>
+      <div><div class="card-title">Contact Directory</div><div class="card-sub">All contacts (consent = Yes shown first)</div></div>
+      <button class="tbtn" style="font-size:12px;padding:6px 12px;color:var(--ink);border-color:var(--border);background:#fff;" onclick="exportContactsExcel()">⬇ Export Contacts</button>
     </div>
     <div class="card-body">
       <input type="text" class="contacts-search" id="contactsSearch" placeholder="Search by name, phone, or researcher…" oninput="renderContactsTable()">
@@ -909,6 +996,7 @@ img.print-chart{display:none;}
           <li onclick="document.getElementById('rs-gov').scrollIntoView({behavior:'smooth'})">Governance &amp; Projects (D)</li>
           <li onclick="document.getElementById('rs-eco').scrollIntoView({behavior:'smooth'})">SME &amp; Economic Issues (E)</li>
           <li onclick="document.getElementById('rs-sent').scrollIntoView({behavior:'smooth'})">Political Sentiment (G)</li>
+          <li onclick="document.getElementById('rs-advice').scrollIntoView({behavior:'smooth'})">Advice to Leaders (G1.2, G6, G7.1, G8.1)</li>
           <li onclick="document.getElementById('rs-comm').scrollIntoView({behavior:'smooth'})">Community Perspectives (H)</li>
           <li onclick="document.getElementById('rs-cross').scrollIntoView({behavior:'smooth'})">Cross-Tabulation Findings</li>
           <li onclick="document.getElementById('rs-rec').scrollIntoView({behavior:'smooth'})">Recommendations</li>
@@ -928,11 +1016,13 @@ img.print-chart{display:none;}
       <hr class="r-divider">
       <div class="r-section" id="rs-sent"><h2>7. Political Sentiment &amp; Voting Intention (Section G)</h2><div id="r-sent-content"><p style="color:var(--muted2)">Loading…</p></div></div>
       <hr class="r-divider">
-      <div class="r-section" id="rs-comm"><h2>8. Civic &amp; Community Perspectives (Section H)</h2><div id="r-comm-content"><p style="color:var(--muted2)">Loading…</p></div></div>
+      <div class="r-section" id="rs-advice"><h2>8. Advice to Leaders (G1.2 · G6 · G7.1 · G8.1)</h2><div id="r-advice-content"><p style="color:var(--muted2)">Loading…</p></div></div>
       <hr class="r-divider">
-      <div class="r-section" id="rs-cross"><h2>9. Cross-Tabulation Key Findings</h2><div id="r-cross-content"><p style="color:var(--muted2)">Loading…</p></div></div>
+      <div class="r-section" id="rs-comm"><h2>9. Civic &amp; Community Perspectives (Section H)</h2><div id="r-comm-content"><p style="color:var(--muted2)">Loading…</p></div></div>
       <hr class="r-divider">
-      <div class="r-section" id="rs-rec"><h2>10. Strategic Recommendations</h2><div id="r-rec-content"><p style="color:var(--muted2)">Loading…</p></div></div>
+      <div class="r-section" id="rs-cross"><h2>10. Cross-Tabulation Key Findings</h2><div id="r-cross-content"><p style="color:var(--muted2)">Loading…</p></div></div>
+      <hr class="r-divider">
+      <div class="r-section" id="rs-rec"><h2>11. Strategic Recommendations</h2><div id="r-rec-content"><p style="color:var(--muted2)">Loading…</p></div></div>
     </div>
   </div>
 </div>
@@ -947,7 +1037,15 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 const auth=firebase.auth();
 
-const ADMIN_EMAILS=["admin@visiontrack.co.ke","supervisor@embu.go.ke","bettemanuel49@gmail.com","senatorkivuti@gmail.com","nicholaskasanga2@gmail.com"];
+const ADMIN_EMAILS = [
+  "admin@visiontrack.co.ke",
+  "supervisor@embu.go.ke",
+  "bettemanuel49@gmail.com",
+  "senatorkivuti@gmail.com",
+  "nicholaskasanga2@gmail.com",
+  "Kiiondwiga@gmail.com",
+  "janekarimifaith@gmail.com",
+];
 
 async function adminGoogleSignIn(){
   const btn=document.getElementById('googleSignInBtn'),spin=document.getElementById('loginSpinner'),txt=document.getElementById('loginBtnTxt'),err=document.getElementById('lerr');
@@ -1029,7 +1127,84 @@ function stripProjPrefix(text){
 }
 
 function cleanCandFreq(field){
-  const f={};data.forEach(d=>{const vv=d[field];if(vv&&vv!=='__other__'&&vv.trim())f[vv]=(f[vv]||0)+1;});return f;
+  const f={};
+  data.forEach(d=>{
+    const raw=d[field];
+    if(!raw)return;
+    const vv=raw.trim();
+    if(!vv||vv==='__other__')return;
+    // Merge case/whitespace variants of the same name into one key,
+    // but keep the first-seen casing as the display label.
+    const norm=vv.toLowerCase().replace(/\s+/g,' ');
+    if(!f[norm])f[norm]={label:vv,count:0};
+    f[norm].count++;
+  });
+  const out={};
+  Object.values(f).forEach(({label,count})=>{out[label]=count;});
+  return out;
+}
+
+/* Groups a candidate-name field by a region field (e.g. prefMP by constituency,
+   prefMCA by ward), normalizing name variants the same way cleanCandFreq does.
+   Returns every region and every named candidate within it — nothing is capped
+   or hidden, so low-mention candidates (including effectively 0%-rounded ones)
+   still appear. */
+function groupedCandFreq(field,regionField,regionList){
+  const groups={};
+  data.forEach(d=>{
+    const region=d[regionField];
+    const raw=d[field];
+    if(!region||!raw)return;
+    const vv=raw.trim();
+    if(!vv||vv==='__other__')return;
+    const norm=vv.toLowerCase().replace(/\s+/g,' ');
+    if(!groups[region])groups[region]={};
+    if(!groups[region][norm])groups[region][norm]={label:vv,count:0};
+    groups[region][norm].count++;
+  });
+  const regions=regionList&&regionList.length?regionList:Object.keys(groups).sort((a,b)=>a.localeCompare(b));
+  return regions.map(region=>{
+    const cands=groups[region]?Object.values(groups[region]).sort((a,b)=>b.count-a.count):[];
+    const total=data.filter(d=>d[regionField]===region).length;
+    return{region,total,candidates:cands};
+  });
+}
+
+/* Renders groupedCandFreq() output as one block per region, listing every
+   candidate (no top-N cutoff) with count and % of that region's respondents. */
+function renderGroupedCandidates(cid,groups){
+  const el=document.getElementById(cid);if(!el)return;
+  const withData=groups.filter(g=>g.candidates.length);
+  if(!withData.length){el.innerHTML='<div class="no-data">No data yet</div>';return;}
+  el.innerHTML=withData.map(g=>`
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px;display:flex;justify-content:space-between;">
+        <span>${esc(g.region)}</span><span style="color:var(--muted2);font-weight:500;">${g.candidates.length} candidate${g.candidates.length!==1?'s':''} · N=${g.total}</span>
+      </div>
+      <div class="hbar-list">
+        ${g.candidates.map(c=>`
+          <div class="hbar-item">
+            <div class="hbar-meta"><span class="hbar-label">${esc(c.label)}</span><span class="hbar-vals"><span class="hbar-pct">${pct(c.count,g.total)}%</span><span class="hbar-n">(${c.count})</span></span></div>
+            <div class="hbar-track"><div class="hbar-fill fill-plum" style="width:${Math.max(pct(c.count,g.total),2)}%"></div></div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+/* ══════════ ADVICE HELPERS ══════════ */
+const ADVICE_STOPWORDS=new Set(['the','and','to','of','a','in','is','for','are','that','it','be','with','on','we','our','have','has','should','more','needs','their','this','was','not','but','they','been','all','also','very','can','will','there','so','by','from','about','an','at','its','which','when','what','or','my','he','she','no','do','if','his','her','as','would','county','embu','ward','area','local','please','just','need','must','him','her','them','his','its','your','you','him']);
+
+function adviceThemes(texts){
+  const wf={};
+  texts.join(' ').toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).filter(w=>w.length>3&&!ADVICE_STOPWORDS.has(w)).forEach(w=>{wf[w]=(wf[w]||0)+1;});
+  return Object.entries(wf).sort((a,b)=>b[1]-a[1]).slice(0,10);
+}
+
+function buildAdviceFeed(cid,texts,colorClass=''){
+  const el=document.getElementById(cid);if(!el)return;
+  const filled=texts.filter(t=>t&&t.trim().length>3).slice(0,20);
+  if(!filled.length){el.innerHTML='<div class="advice-empty">No advice responses yet.</div>';return;}
+  el.innerHTML=filled.map(t=>`<div class="advice-card ${colorClass}">${esc(t.trim())}</div>`).join('');
 }
 
 /* ══════════ FETCH ══════════ */
@@ -1046,6 +1221,7 @@ async function fetchData(){
     document.getElementById('loadMsg').textContent=`Processing ${rawData.length} responses + ${contactsData.length} contacts…`;
     await new Promise(r=>setTimeout(r,80));
     data=[...rawData];
+    rebuildPollingStationOptions(true);
     buildAll();
     document.getElementById('tm-time').textContent=new Date().toLocaleTimeString();
     document.getElementById('tm-contacts').textContent=contactsData.length;
@@ -1057,10 +1233,11 @@ async function refreshData(){document.getElementById('refreshBtn').disabled=true
 
 /* ══════════ FILTERS ══════════ */
 function getFiltered(){
-  const c=v('gf-constituency'),w=v('gf-ward'),g=v('gf-gender'),a=v('gf-age'),gv2=v('gf-governor');
+  const c=v('gf-constituency'),w=v('gf-ward'),ps=v('gf-pollingstation'),g=v('gf-gender'),a=v('gf-age'),gv2=v('gf-governor');
   return rawData.filter(d=>{
     if(c&&d.constituency!==c)return false;
     if(w&&d.ward!==w)return false;
+    if(ps&&d.pollingStation!==ps)return false;
     if(g&&d.gender!==g)return false;
     if(a&&d.age!==a)return false;
     if(gv2&&d.governor!==gv2)return false;
@@ -1068,14 +1245,39 @@ function getFiltered(){
   });
 }
 const WARDS_MAP={'Manyatta':['Ruguru/Ngandori','Kithimu','Nginda','Mbeti North','Kirimari','Gaturi South'],'Runyenjes':['Gaturi North','Kagaari South','Kagaari North','Central Ward','Kyeni North','Kyeni South'],'Mbeere South':['Mwea','Makima','Mbeti South','Mavuria','Kiambere'],'Mbeere North':['Nthawa','Muminji','Evurore']};
+
+/* Polling stations aren't a fixed enum like wards — they're whatever values
+   exist in the loaded survey data, so the dropdown is rebuilt from rawData
+   each time the constituency/ward scope changes. */
+function rebuildPollingStationOptions(preserveSelection){
+  const sel=document.getElementById('gf-pollingstation');
+  const prev=preserveSelection?sel.value:'';
+  const c=v('gf-constituency'),w=v('gf-ward');
+  const scoped=rawData.filter(d=>{
+    if(c&&d.constituency!==c)return false;
+    if(w&&d.ward!==w)return false;
+    return true;
+  });
+  const psSet=new Set();
+  scoped.forEach(d=>{if(d.pollingStation&&d.pollingStation.trim())psSet.add(d.pollingStation.trim());});
+  const stations=[...psSet].sort((a,b)=>a.localeCompare(b));
+  sel.innerHTML='<option value="">All Polling Stations</option>'+stations.map(s=>`<option>${esc(s)}</option>`).join('');
+  if(preserveSelection&&prev&&stations.includes(prev))sel.value=prev;
+}
+
 function onConstFilterChange(){
   const c=v('gf-constituency');const sel=document.getElementById('gf-ward');
   sel.innerHTML='<option value="">All Wards</option>';
   if(c){(WARDS_MAP[c]||[]).forEach(w=>{const o=document.createElement('option');o.value=w;o.textContent=w;sel.appendChild(o);});}
   else{Object.entries(WARDS_MAP).forEach(([con,ws])=>{const g=document.createElement('optgroup');g.label=con;ws.forEach(w=>{const o=document.createElement('option');o.value=w;o.textContent=w;g.appendChild(o);});sel.appendChild(g);});}
+  rebuildPollingStationOptions(false);
   recomputeAll();
 }
-function clearFilters(){['gf-constituency','gf-ward','gf-gender','gf-age','gf-governor'].forEach(id=>{document.getElementById(id).value='';});onConstFilterChange();}
+function onWardFilterChange(){
+  rebuildPollingStationOptions(false);
+  recomputeAll();
+}
+function clearFilters(){['gf-constituency','gf-ward','gf-pollingstation','gf-gender','gf-age','gf-governor'].forEach(id=>{document.getElementById(id).value='';});onConstFilterChange();}
 function recomputeAll(){data=getFiltered();document.getElementById('gf-n').textContent=data.length;buildAll();}
 function v(id){const e=document.getElementById(id);return e?e.value:'';}
 
@@ -1094,11 +1296,14 @@ function mkChart(id,cfg){
 function hbar(cid,entries,total,fillCls='fill-green',max=10){
   const el=document.getElementById(cid);if(!el)return;
   if(!entries.length){el.innerHTML='<div class="no-data">No data yet</div>';return;}
-  el.innerHTML=entries.slice(0,max).map(([lbl,n])=>`
+  const shown=entries.slice(0,max);
+  const hiddenCount=entries.length-shown.length;
+  el.innerHTML=shown.map(([lbl,n])=>`
     <div class="hbar-item">
       <div class="hbar-meta"><span class="hbar-label">${esc(lbl)}</span><span class="hbar-vals"><span class="hbar-pct">${pct(n,total)}%</span><span class="hbar-n">(${n})</span></span></div>
       <div class="hbar-track"><div class="hbar-fill ${fillCls}" style="width:${pct(n,total)}%"></div></div>
-    </div>`).join('');
+    </div>`).join('')
+    + (hiddenCount>0?`<div style="font-size:11px;color:var(--muted2);font-style:italic;padding-top:4px;">+ ${hiddenCount} more not shown — see Report tab for full list</div>`:'');
 }
 
 /* ══════════ BUILD ALL ══════════ */
@@ -1130,8 +1335,8 @@ function buildAll(){
   document.getElementById('hs-contacts-consent').textContent=ctConsent+' consented';
 
   buildOverview();buildDemographics();buildPolitical();buildInfo();
-  buildGovernance();buildEconomics();buildSentiment();buildCommunity();
-  buildCrosstab();buildQualitative();buildContacts();buildInsight();
+  buildGovernance();buildEconomics();buildSentiment();buildAdvice();
+  buildCommunity();buildCrosstab();buildQualitative();buildContacts();buildInsight();
   if(document.getElementById('tab-report').classList.contains('active'))buildReport();
 }
 
@@ -1176,6 +1381,8 @@ function buildDemographics(){
   hbar('hbar-ps-valid',sortDesc(pvf),n,'fill-green');
   const rf={};data.forEach(d=>{const r=d._researcherLogin||d._researcher;if(r)rf[r]=(rf[r]||0)+1;});
   hbar('hbar-researchers',sortDesc(rf),n,'fill-sky',10);
+  const psf={};data.forEach(d=>{const p=d.pollingStation&&d.pollingStation.trim();if(p)psf[p]=(psf[p]||0)+1;});
+  hbar('hbar-pollingstation',sortDesc(psf),n,'fill-plum',15);
 }
 
 /* ═══ POLITICAL (B) ═══ */
@@ -1267,6 +1474,53 @@ function buildSentiment(){
   hbar('hbar-mca',      sortDesc(cleanCandFreq('prefMCA')),      n,'fill-plum', 8);
 }
 
+/* ═══ ADVICE TAB (NEW) ═══ */
+function buildAdvice(){
+  const n=data.length;
+
+  // Collect advice texts
+  const rutoTexts   = data.map(d=>d.adviceRuto||'').filter(t=>t.trim().length>3);
+  const mbarireTexts= data.map(d=>d.adviceMbarire||'').filter(t=>t.trim().length>3);
+  const kivutiTexts = data.map(d=>d.adviceKivuti||'').filter(t=>t.trim().length>3);
+  const mukunjiTexts= data.map(d=>d.adviceMukunji||'').filter(t=>t.trim().length>3);
+
+  // KPI counts
+  document.getElementById('kpi-advice-ruto-n').textContent=rutoTexts.length;
+  document.getElementById('kpi-advice-mbarire-n').textContent=mbarireTexts.length;
+  document.getElementById('kpi-advice-kivuti-n').textContent=kivutiTexts.length;
+  document.getElementById('kpi-advice-mukunji-n').textContent=mukunjiTexts.length;
+
+  // Word clouds
+  wordCloudAdv('wc-advice-ruto',   rutoTexts);
+  wordCloudAdv('wc-advice-mbarire-adv', mbarireTexts);
+  wordCloudAdv('wc-advice-kivuti', kivutiTexts);
+  wordCloudAdv('wc-advice-mukunji',mukunjiTexts);
+
+  // Theme hbars
+  hbar('hbar-advice-ruto-themes',   adviceThemes(rutoTexts),   rutoTexts.length||1,   'fill-red',  10);
+  hbar('hbar-advice-mbarire-themes',adviceThemes(mbarireTexts),mbarireTexts.length||1,'fill-green',10);
+  hbar('hbar-advice-kivuti-themes', adviceThemes(kivutiTexts), kivutiTexts.length||1, 'fill-gold', 10);
+  hbar('hbar-advice-mukunji-themes',adviceThemes(mukunjiTexts),mukunjiTexts.length||1,'fill-sky',  10);
+
+  // Quote feeds
+  buildAdviceFeed('advice-ruto-feed',    rutoTexts,   'red');
+  buildAdviceFeed('advice-mbarire-feed', mbarireTexts,'');
+  buildAdviceFeed('advice-kivuti-feed',  kivutiTexts, 'gold');
+  buildAdviceFeed('advice-mukunji-feed', mukunjiTexts,'sky');
+}
+
+/* Word cloud variant for advice (slightly different stopwords) */
+function wordCloudAdv(cid,texts){
+  const el=document.getElementById(cid);if(!el)return;
+  if(!texts.length){el.innerHTML='<div class="no-data">No advice responses yet</div>';return;}
+  const wf={};
+  texts.join(' ').toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).filter(w=>w.length>3&&!ADVICE_STOPWORDS.has(w)).forEach(w=>{wf[w]=(wf[w]||0)+1;});
+  const sorted=Object.entries(wf).sort((a,b)=>b[1]-a[1]).slice(0,36);
+  const max=sorted[0]?.[1]||1;
+  const cols=['#1a4a2a','#c8963e','#b83232','#2563a8','#6b3fa0','#4caf78'];
+  el.innerHTML=sorted.map(([w,cnt],i)=>{const sz=11+Math.round((cnt/max)*16);const col=cols[i%cols.length];return`<span class="word-pill" style="font-size:${sz}px;background:${col}18;color:${col};border:1px solid ${col}40">${esc(w)} <sup style="font-size:9px">${cnt}</sup></span>`;}).join('');
+}
+
 /* ═══ COMMUNITY (H) ═══ */
 function buildCommunity(){
   const n=data.length;
@@ -1306,7 +1560,7 @@ function buildCrosstab(){
   GOV_CANDS.forEach(g=>{const sub=data.filter(d=>d.governor===g);if(!sub.length)return;const m=meanScore(sub,'performance',PERF_SCORE);ht+=`<tr><td>${esc(g)}</td>${PERF_ORDER.map(p=>`<td>${pct(sub.filter(d=>d.performance===p).length,sub.length)}%</td>`).join('')}<td style="color:var(--leaf);font-weight:600">${m.toFixed(2)}</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
   ht+='</tbody>';document.getElementById('xtab-gov-perf').innerHTML=ht;
   ht=`<thead><tr><th>Constituency</th><th>Re-elect Yes %</th><th>Re-elect No %</th><th>N</th></tr></thead><tbody>`;
-  CONSTITS.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;const y=sub.filter(d=>d.reelectRuto==='Yes').length;ht+=`<tr><td>${c}</td><td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="width:${pct(y,sub.length)}%;background:var(--red)"></div></div>${pct(y,sub.length)}%</div></td><td>${pct(sub.length-y,sub.length)}%</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
+  CONSTITS.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;const y=sub.filter(d=>d.reelectRuto==='Yes').length;ht+=`<tr><td>${c}</td><td>${pct(y,sub.length)}%</td><td>${pct(sub.length-y,sub.length)}%</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
   ht+='</tbody>';document.getElementById('xtab-ruto-const').innerHTML=ht;
   ht=`<thead><tr><th>Constituency</th>${PARTIES.slice(0,4).map(p=>`<th>${p}</th>`).join('')}<th>Other</th><th>N</th></tr></thead><tbody>`;
   CONSTITS.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;ht+=`<tr><td>${c}</td>${PARTIES.slice(0,4).map(p=>`<td>${pct(sub.filter(d=>d.party===p).length,sub.length)}%</td>`).join('')}<td>${pct(sub.filter(d=>d.party&&!PARTIES.slice(0,4).includes(d.party)).length,sub.length)}%</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
@@ -1324,13 +1578,16 @@ function buildQualitative(){
   const n=data.length;
   wordCloud('wc-needs',data.map(d=>stripProjPrefix(d.needs)).filter(Boolean));
   wordCloud('wc-advice-mbarire',data.map(d=>d.adviceMbarire).filter(Boolean));
+  wordCloud('wc-advice-ruto-q',  data.map(d=>d.adviceRuto).filter(Boolean));
+  wordCloud('wc-advice-kivuti-q',data.map(d=>d.adviceKivuti).filter(Boolean));
+  wordCloud('wc-advice-mukunji-q',data.map(d=>d.adviceMukunji).filter(Boolean));
   wordCloud('wc-proj-del-q',data.map(d=>stripProjPrefix(d.projectsDelivered)).filter(Boolean));
   wordCloud('wc-proj-miss-q',data.map(d=>stripProjPrefix(d.projectsMissing)).filter(Boolean));
   const ppf={};
   data.forEach(d=>{const vv=(d.preferredPres||'').trim();if(vv&&d.reelectRuto==='No')ppf[vv]=(ppf[vv]||0)+1;});
   hbar('hbar-pref-pres-q',sortDesc(ppf),n,'fill-red',10);
-  hbar('hbar-mp-q', sortDesc(cleanCandFreq('prefMP')), n,'fill-sky', 10);
-  hbar('hbar-mca-q',sortDesc(cleanCandFreq('prefMCA')),n,'fill-plum',10);
+  renderGroupedCandidates('mp-by-const-q', groupedCandFreq('prefMP','constituency',CONSTITS));
+  renderGroupedCandidates('mca-by-ward-q', groupedCandFreq('prefMCA','ward'));
   const govOtherF={};
   data.forEach(d=>{if(d.governor==='Other'&&d.governorOther&&d.governorOther.trim()){const k=d.governorOther.trim();govOtherF[k]=(govOtherF[k]||0)+1;}});
   hbar('hbar-gov-other-q',sortDesc(govOtherF),n,'fill-plum',10);
@@ -1349,51 +1606,29 @@ function buildContacts(){
   document.getElementById('ct-consent-yes').textContent=withConsent;
   document.getElementById('ct-with-phone').textContent=withPhone;
   document.getElementById('ct-with-name').textContent=withName;
-  _contactsPage=0;
-  renderContactsTable();
+  _contactsPage=0;renderContactsTable();
 }
 
 function getFilteredContacts(){
   const q=(document.getElementById('contactsSearch')?.value||'').toLowerCase().trim();
   if(!q)return contactsData;
   return contactsData.filter(d=>{
-    const name=(d.contactName||'').toLowerCase();
-    const phone=(d.contactPhone||'').toLowerCase();
-    const res=(d._researcher||'').toLowerCase();
-    return name.includes(q)||phone.includes(q)||res.includes(q);
+    return(d.contactName||'').toLowerCase().includes(q)||(d.contactPhone||'').toLowerCase().includes(q)||(d._researcher||'').toLowerCase().includes(q);
   });
 }
 
 function renderContactsTable(){
-  const filtered=getFilteredContacts();
-  const total=filtered.length;
-  const start=_contactsPage*CONTACTS_PER_PAGE;
-  const page=filtered.slice(start,start+CONTACTS_PER_PAGE);
+  const filtered=getFilteredContacts();const total=filtered.length;
+  const start=_contactsPage*CONTACTS_PER_PAGE;const page=filtered.slice(start,start+CONTACTS_PER_PAGE);
   const tbody=document.getElementById('contactsTbody');
-  if(!page.length){
-    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted2);padding:24px;">No contacts found</td></tr>';
-  }else{
-    tbody.innerHTML=page.map((d,i)=>{
-      const dt=d._submittedAt?new Date(d._submittedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
-      const consentCls=d.followUp==='Yes'?'consent-yes':d.followUp==='No'?'consent-no':'';
-      const consent=d.followUp||'—';
-      return `<tr>
-        <td style="color:var(--muted2)">${start+i+1}</td>
-        <td><strong>${esc(d.contactName||'—')}</strong></td>
-        <td>${esc(d.contactPhone||'—')}</td>
-        <td class="${consentCls}">${consent}</td>
-        <td style="color:var(--muted)">${esc(d._researcher||'—')}</td>
-        <td style="color:var(--muted2)">${dt}</td>
-        <td style="color:var(--muted2);font-size:11px">${esc(d._respondentId||'—')}</td>
-      </tr>`;
-    }).join('');
-  }
+  if(!page.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted2);padding:24px;">No contacts found</td></tr>';}
+  else{tbody.innerHTML=page.map((d,i)=>{
+    const dt=d._submittedAt?new Date(d._submittedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
+    const consentCls=d.followUp==='Yes'?'consent-yes':d.followUp==='No'?'consent-no':'';
+    return`<tr><td style="color:var(--muted2)">${start+i+1}</td><td><strong>${esc(d.contactName||'—')}</strong></td><td>${esc(d.contactPhone||'—')}</td><td class="${consentCls}">${d.followUp||'—'}</td><td style="color:var(--muted)">${esc(d._researcher||'—')}</td><td style="color:var(--muted2)">${dt}</td><td style="color:var(--muted2);font-size:11px">${esc(d._respondentId||'—')}</td></tr>`;
+  }).join('');}
   const pages=Math.ceil(total/CONTACTS_PER_PAGE);
-  const pager=document.getElementById('contactsPager');
-  pager.innerHTML=`
-    <button class="cpager-btn" onclick="_contactsPage=Math.max(0,_contactsPage-1);renderContactsTable()" ${_contactsPage===0?'disabled':''}>← Prev</button>
-    <span>Page ${_contactsPage+1} of ${pages||1} &nbsp;·&nbsp; ${total} records</span>
-    <button class="cpager-btn" onclick="_contactsPage=Math.min(${pages-1},_contactsPage+1);renderContactsTable()" ${_contactsPage>=pages-1?'disabled':''}>Next →</button>`;
+  document.getElementById('contactsPager').innerHTML=`<button class="cpager-btn" onclick="_contactsPage=Math.max(0,_contactsPage-1);renderContactsTable()" ${_contactsPage===0?'disabled':''}>← Prev</button><span>Page ${_contactsPage+1} of ${pages||1} · ${total} records</span><button class="cpager-btn" onclick="_contactsPage=Math.min(${pages-1},_contactsPage+1);renderContactsTable()" ${_contactsPage>=pages-1?'disabled':''}>Next →</button>`;
 }
 
 function exportContactsExcel(){
@@ -1401,114 +1636,53 @@ function exportContactsExcel(){
   const stamp=new Date().toISOString().slice(0,10);
   const wb=XLSX.utils.book_new();
   const rows=[['#','Full Name','Phone Number','Follow-up Consent','Researcher','Researcher Login','Submitted At','Respondent ID']];
-  contactsData.forEach((d,i)=>{
-    rows.push([i+1,d.contactName||'',d.contactPhone||'',d.followUp||'',d._researcher||'',d._researcherLogin||'',d._submittedAt||'',d._respondentId||'']);
-  });
+  contactsData.forEach((d,i)=>{rows.push([i+1,d.contactName||'',d.contactPhone||'',d.followUp||'',d._researcher||'',d._researcherLogin||'',d._submittedAt||'',d._respondentId||'']);});
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Contacts');
-  const sum=[['CONTACTS SUMMARY',''],['Total Contacts',contactsData.length],['Consented (Yes)',contactsData.filter(d=>d.followUp==='Yes').length],['Not Consented (No)',contactsData.filter(d=>d.followUp==='No').length],['With Phone Number',contactsData.filter(d=>d.contactPhone&&d.contactPhone.trim()).length],['With Name',contactsData.filter(d=>d.contactName&&d.contactName.trim()).length],['Exported On',new Date().toLocaleString()]];
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sum),'Summary');
   XLSX.writeFile(wb,`ecs2026_contacts_${stamp}.xlsx`);
   toast(`✓ Contacts exported — ${contactsData.length} records`,'#1a4a2a');
 }
 
 /* ══════════════════════════════════════════════
-   PRINT SYSTEM — FULLY FIXED
+   PRINT SYSTEM
 ══════════════════════════════════════════════ */
 let _printMode='report';
+function openPrintModal(){if(!data.length){toast('No data loaded yet','#b83232');return;}document.getElementById('printModal').classList.add('open');}
+function closePrintModal(){document.getElementById('printModal').classList.remove('open');}
+function selectPrintOpt(mode){_printMode=mode;document.querySelectorAll('.pm-opt').forEach(el=>el.classList.remove('selected'));document.getElementById('popt-'+mode).classList.add('selected');}
 
-function openPrintModal(){
-  if(!data.length){toast('No data loaded yet','#b83232');return;}
-  document.getElementById('printModal').classList.add('open');
-}
-function closePrintModal(){
-  document.getElementById('printModal').classList.remove('open');
-}
-function selectPrintOpt(mode){
-  _printMode=mode;
-  document.querySelectorAll('.pm-opt').forEach(el=>el.classList.remove('selected'));
-  document.getElementById('popt-'+mode).classList.add('selected');
-}
-
-/* FIX 1: Use data-for attribute instead of ID to avoid duplicates across multiple print sessions */
 function snapshotCharts(){
-  const detail=document.getElementById('pp-detail');
-  let count=0;
-  for(const [id,chart] of Object.entries(charts)){
+  const detail=document.getElementById('pp-detail');let count=0;
+  for(const[id,chart]of Object.entries(charts)){
     try{
-      const canvas=chart.canvas;
-      if(!canvas)continue;
-      /* FIX: look up by data-for, not by hard-coded img ID */
+      const canvas=chart.canvas;if(!canvas)continue;
       let img=canvas.parentNode.querySelector(`img.print-chart[data-for="${id}"]`);
-      if(!img){
-        img=document.createElement('img');
-        img.className='print-chart';
-        img.dataset.for=id;
-        img.style.display='none';
-        canvas.parentNode.insertBefore(img,canvas.nextSibling);
-      }
+      if(!img){img=document.createElement('img');img.className='print-chart';img.dataset.for=id;img.style.display='none';canvas.parentNode.insertBefore(img,canvas.nextSibling);}
       const dataUrl=canvas.toDataURL('image/png',1.0);
-      /* FIX: only store if the canvas actually has content (not blank white) */
-      if(dataUrl&&dataUrl!=='data:,'){
-        img.src=dataUrl;
-        img.style.width='100%';
-        img.style.height='auto';
-        count++;
-      }
+      if(dataUrl&&dataUrl!=='data:,'){img.src=dataUrl;img.style.width='100%';img.style.height='auto';count++;}
       if(detail)detail.textContent=`Captured ${count} charts…`;
     }catch(e){console.warn('Could not snapshot chart',id,e);}
   }
   return count;
 }
 
-/* FIX 2: Proper async sequencing — show tabs → resize charts → wait for real paint → snapshot → print */
 async function executePrint(){
   closePrintModal();
-  const prog=document.getElementById('printProgress');
-  prog.classList.add('open');
+  const prog=document.getElementById('printProgress');prog.classList.add('open');
   document.getElementById('pp-detail').textContent='Showing all tabs…';
-
-  /* Step 1 — make every tab-content visible so canvases have real dimensions */
   document.querySelectorAll('.tab-content').forEach(el=>{el.style.display='block';});
-
-  /* Step 2 — tell Chart.js to resize all charts now that canvases are visible */
   Object.values(charts).forEach(c=>{try{c.resize();}catch(e){}});
-
-  /* Step 3 — wait for TWO animation frames (guarantees an actual browser paint) */
   await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-
-  /* Step 4 — build report HTML if needed */
-  if(_printMode==='report'||_printMode==='charts'||_printMode==='all'){
-    buildReport();
-    /* wait for report DOM to render */
-    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-  }
-
-  /* Step 5 — snapshot all charts to paired <img> elements */
+  if(_printMode==='report'||_printMode==='charts'||_printMode==='all'){buildReport();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));}
   document.getElementById('pp-detail').textContent='Converting charts to images…';
   await new Promise(r=>setTimeout(r,80));
   const n=snapshotCharts();
   document.getElementById('pp-detail').textContent=`${n} charts captured. Opening print dialog…`;
   await new Promise(r=>setTimeout(r,300));
-
-  prog.classList.remove('open');
-  window.print();
-  /* FIX 3: Tab restore is handled by the afterprint event below — NOT here */
+  prog.classList.remove('open');window.print();
 }
+window.addEventListener('afterprint',function(){document.querySelectorAll('.tab-content').forEach(el=>{if(!el.classList.contains('active'))el.style.display='';});});
 
-/* FIX 3: Restore hidden tabs AFTER the print dialog closes, not immediately after window.print() */
-window.addEventListener('afterprint',function(){
-  document.querySelectorAll('.tab-content').forEach(el=>{
-    if(!el.classList.contains('active'))el.style.display='';
-  });
-});
-
-/* Quick "Report Only" print — no chart capture needed */
-function printReportOnly(){
-  if(!data.length){toast('No data loaded','#b83232');return;}
-  buildReport();
-  _printMode='report';
-  window.print();
-}
+function printReportOnly(){if(!data.length){toast('No data loaded','#b83232');return;}buildReport();_printMode='report';window.print();}
 
 /* ═══ WORD CLOUD ═══ */
 const STOPWORDS=new Set(['the','and','to','of','a','in','is','for','are','that','it','be','with','on','we','our','have','has','need','should','more','needs','their','this','was','not','but','they','been','all','also','very','can','will','there','so','by','from','about','an','at','its','which','when','what','or','my','he','she','no','do','if','his','her','as','would','county','embu','ward','area','local','government']);
@@ -1545,10 +1719,11 @@ function buildInsight(){
   const topPerf=Object.entries(pf).sort((a,b)=>b[1]-a[1])[0];
   const ndf=freqMulti(data,'notDelivered');const topND=Object.entries(ndf).sort((a,b)=>b[1]-a[1])[0];
   const smeF=freqMulti(data,'smeChallenges');const topSme=Object.entries(smeF).sort((a,b)=>b[1]-a[1])[0];
+  const advRuto=data.filter(d=>d.adviceRuto&&d.adviceRuto.trim().length>3).length;
   const ins=[
-    `Of <strong>${n} respondents</strong>, <strong>${pct(gvf['Cecily Mbarire']||0,n)}%</strong> intend to vote for Cecily Mbarire vs <strong>${pct(gvf['Lenny Kivuti']||0,n)}%</strong> for Lenny Kivuti and <strong>${pct(gvf['Gitonga Mukunji']||0,n)}%</strong> for Gitonga Mukunji. <strong>${pct(rf.Yes||0,n)}%</strong> would re-elect President Ruto.`,
+    `Of <strong>${n} respondents</strong>, <strong>${pct(gvf['Cecily Mbarire']||0,n)}%</strong> intend to vote for Cecily Mbarire vs <strong>${pct(gvf['Lenny Kivuti']||0,n)}%</strong> for Lenny Kivuti. <strong>${pct(rf.Yes||0,n)}%</strong> would re-elect President Ruto. <strong>${advRuto}</strong> respondents gave written advice to President Ruto.`,
     `County government performance is rated <strong>${topPerf?.[0]||'—'}</strong> by the largest group (${pct(topPerf?.[1]||0,n)}%). Top undelivered sector: <strong>${topND?.[0]||'—'}</strong> (${pct(topND?.[1]||0,n)}% named it).`,
-    `The top SME challenge in Embu County is <strong>"${topSme?.[0]||'—'}"</strong> (${pct(topSme?.[1]||0,n)}%). Voter registration: <strong>${pct((freq(data,'voter').Yes||0),n)}%</strong>. Contacts collected: <strong>${contactsData.length}</strong> (${contactsData.filter(d=>d.followUp==='Yes').length} consented).`
+    `The top SME challenge is <strong>"${topSme?.[0]||'—'}"</strong> (${pct(topSme?.[1]||0,n)}%). Voter registration: <strong>${pct((freq(data,'voter').Yes||0),n)}%</strong>. Contacts collected: <strong>${contactsData.length}</strong>.`
   ];
   document.getElementById('insight-text').innerHTML=ins[Math.floor(Date.now()/10000)%ins.length];
 }
@@ -1568,7 +1743,7 @@ function buildReport(){
   const n=data.length;if(!n){toast('No data loaded','#b83232');return;}
   document.getElementById('r-n').textContent=n.toLocaleString();
   document.getElementById('r-date').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-  const parts=[v('gf-constituency'),v('gf-ward'),v('gf-gender'),v('gf-age'),v('gf-governor')].filter(Boolean);
+  const parts=[v('gf-constituency'),v('gf-ward'),v('gf-pollingstation'),v('gf-gender'),v('gf-age'),v('gf-governor')].filter(Boolean);
   document.getElementById('r-filter-lbl').textContent=parts.length?parts.join(' · '):'All Respondents';
   const gF=freq(data,'gender'),ageF=freq(data,'age'),conF=freq(data,'constituency'),wardF=freq(data,'ward');
   const eduF=freq(data,'education'),empF=freq(data,'employment'),vF=freq(data,'voter');
@@ -1581,23 +1756,42 @@ function buildReport(){
   const perfMean=meanScore(data,'performance',PERF_SCORE);
   const occF={};data.forEach(d=>{const k=normalizeOcc(d.occupation);if(k)occF[k]=(occF[k]||0)+1;});
   const govOtherF={};data.forEach(d=>{if(d.governor==='Other'&&d.governorOther&&d.governorOther.trim()){const k=d.governorOther.trim();govOtherF[k]=(govOtherF[k]||0)+1;}});
+
+  // Advice data
+  const rutoAdvice   = data.filter(d=>d.adviceRuto   &&d.adviceRuto.trim().length>3).map(d=>d.adviceRuto.trim());
+  const mbarireAdvice= data.filter(d=>d.adviceMbarire&&d.adviceMbarire.trim().length>3).map(d=>d.adviceMbarire.trim());
+  const kivutiAdvice = data.filter(d=>d.adviceKivuti &&d.adviceKivuti.trim().length>3).map(d=>d.adviceKivuti.trim());
+  const mukunjiAdvice= data.filter(d=>d.adviceMukunji&&d.adviceMukunji.trim().length>3).map(d=>d.adviceMukunji.trim());
+
   const top=(obj,k=1)=>sortDesc(obj).slice(0,k).map(([l,vv])=>`${l} (${pct(vv,n)}%)`).join(', ');
   const topLbl=(obj)=>sortDesc(obj)[0]?.[0]||'—';
-  function ftbl(obj,tot,lbl='Response'){const rows=sortDesc(obj);return`<table class="r-table"><thead><tr><th>${lbl}</th><th>Count</th><th>%</th></tr></thead><tbody>${rows.map(([l,vv])=>`<tr><td>${esc(l)}</td><td class="num">${vv}</td><td class="num">${pct(vv,tot)}%</td></tr>`).join('')}</tbody></table>`;}
-
   const ctTotal=contactsData.length;
   const ctConsent=contactsData.filter(d=>d.followUp==='Yes').length;
   const ctPhone=contactsData.filter(d=>d.contactPhone&&d.contactPhone.trim()).length;
 
+  function ftbl(obj,tot,lbl='Response'){const rows=sortDesc(obj);return`<table class="r-table"><thead><tr><th>${lbl}</th><th>Count</th><th>%</th></tr></thead><tbody>${rows.map(([l,vv])=>`<tr><td>${esc(l)}</td><td class="num">${vv}</td><td class="num">${pct(vv,tot)}%</td></tr>`).join('')}</tbody></table>`;}
+
+  function adviceQuoteSample(texts,max=5){
+    if(!texts.length)return'<p style="color:var(--muted2)">No advice responses recorded.</p>';
+    const sample=texts.slice(0,max);
+    return`<ul>${sample.map(t=>`<li style="margin-bottom:8px;font-style:italic">"${esc(t)}"</li>`).join('')}</ul>${texts.length>max?`<p style="font-size:12px;color:var(--muted2)">… and ${texts.length-max} more responses. See the Advice tab for full analysis.</p>`:''}`;
+  }
+
+  function adviceTopWords(texts,max=5){
+    if(!texts.length)return'<p style="color:var(--muted2)">No data.</p>';
+    const themes=adviceThemes(texts).slice(0,max);
+    return`<ul>${themes.map(([w,c])=>`<li><strong>${esc(w)}</strong> — mentioned ${c} time${c!==1?'s':''}</li>`).join('')}</ul>`;
+  }
+
   document.getElementById('r-exec-content').innerHTML=`
     <div class="r-finding">
       <h3>Key Findings at a Glance</h3>
-      <p>This report analyses <strong>${n.toLocaleString()} survey responses</strong> across Embu County's four constituencies: Manyatta, Runyenjes, Mbeere North, and Mbeere South.</p>
-      <p><strong>Demographics:</strong> ${pct(gF.Female||0,n)}% Female, ${pct(gF.Male||0,n)}% Male. Dominant age group: <strong>${sortDesc(ageF)[0]?.[0]||'—'}</strong>. Voter registration: <strong>${pct(vF.Yes||0,n)}%</strong>.</p>
-      <p><strong>Governance:</strong> County performance rated <strong>${topLbl(perfF)}</strong> by most respondents (mean ${perfMean.toFixed(2)}/4.0). Top undelivered sector: <strong>${topLbl(nDelF)}</strong>.</p>
+      <p>This report analyses <strong>${n.toLocaleString()} survey responses</strong> across Embu County's four constituencies.</p>
+      <p><strong>Demographics:</strong> ${pct(gF.Female||0,n)}% Female, ${pct(gF.Male||0,n)}% Male. Dominant age: <strong>${sortDesc(ageF)[0]?.[0]||'—'}</strong>. Voter registration: <strong>${pct(vF.Yes||0,n)}%</strong>.</p>
+      <p><strong>Governance:</strong> Performance rated <strong>${topLbl(perfF)}</strong> by most (mean ${perfMean.toFixed(2)}/4.0). Top undelivered sector: <strong>${topLbl(nDelF)}</strong>.</p>
       <p><strong>Political Sentiment:</strong> Governor — Mbarire: <strong>${pct(govF['Cecily Mbarire']||0,n)}%</strong>, Kivuti: ${pct(govF['Lenny Kivuti']||0,n)}%, Gitonga: ${pct(govF['Gitonga Mukunji']||0,n)}%. Re-elect Ruto: <strong>${pct(rutoF.Yes||0,n)}%</strong>.</p>
-      <p><strong>SME:</strong> Top business challenge: <strong>${topLbl(smeF)}</strong>. Primary info source: <strong>${topLbl(infoF)}</strong>.</p>
-      <p><strong>Contacts (Section I):</strong> <strong>${ctTotal}</strong> contact records collected separately. ${ctConsent} consented to follow-up (${pct(ctConsent,ctTotal||1)}%). ${ctPhone} provided phone numbers.</p>
+      <p><strong>Advice to Leaders:</strong> ${rutoAdvice.length} respondents gave advice to President Ruto · ${mbarireAdvice.length} to Mbarire · ${kivutiAdvice.length} to Kivuti · ${mukunjiAdvice.length} to Mukunji.</p>
+      <p><strong>Contacts (Section I):</strong> <strong>${ctTotal}</strong> contact records. ${ctConsent} consented to follow-up. ${ctPhone} provided phone numbers.</p>
     </div>
     <div class="r-badge-row">
       <span class="r-badge rb-green">N = ${n}</span>
@@ -1608,11 +1802,13 @@ function buildReport(){
       <span class="r-badge rb-green">Contacts: ${ctTotal}</span>
     </div>`;
 
+  const psF={};data.forEach(d=>{const p=d.pollingStation&&d.pollingStation.trim();if(p)psF[p]=(psF[p]||0)+1;});
   document.getElementById('r-demo-content').innerHTML=`
     <h3>A1 — Gender</h3>${ftbl(gF,n,'Gender')}
     <h3>A5 — Age Profile</h3>${ftbl(ageF,n,'Age Group')}
     <h3>A2 — Constituency</h3>${ftbl(conF,n,'Constituency')}
     <h3>A3 — Ward</h3>${ftbl(wardF,n,'Ward')}
+    <h3>A4 — Coverage by Polling Station (top 15)</h3>${ftbl(Object.fromEntries(sortDesc(psF).slice(0,15)),n,'Polling Station')}
     <h3>A6 — Education Level</h3>${ftbl(eduF,n,'Education')}
     <h3>A7 — Employment Status</h3>${ftbl(empF,n,'Employment')}
     <h3>A8 — Occupation (Normalized)</h3>${ftbl(occF,n,'Occupation Category')}`;
@@ -1633,7 +1829,7 @@ function buildReport(){
 
   document.getElementById('r-eco-content').innerHTML=`<h3>E1 — SME Challenges</h3>${ftbl(smeF,n,'Challenge')}`;
 
-  const ppf={};data.forEach(d=>{const vv=(d.preferredPres||'').trim();if(vv&&d.reelectRuto==='No')ppf[vv]=(ppf[vv]||0)+1;});
+ const ppf={};data.forEach(d=>{const vv=(d.preferredPres||'').trim();if(vv&&d.reelectRuto==='No')ppf[vv]=(ppf[vv]||0)+1;});
   document.getElementById('r-sent-content').innerHTML=`
     <h3>G1 — Re-elect President Ruto?</h3>${ftbl(rutoF,n,'Response')}
     ${pct(rutoF.Yes||0,n)<50?`<div class="r-callout"><strong>Note:</strong> Majority oppose re-electing Ruto.</div>`:''}
@@ -1645,14 +1841,66 @@ function buildReport(){
     <h3>G5 — Reasons AGAINST Mbarire</h3>${ftbl(antiMbF,n,'Reason')}
     <h3>G7 — Reasons AGAINST Kivuti</h3>${ftbl(antiKvF,n,'Reason')}
     <h3>G8 — Reasons AGAINST Gitonga Mukunji</h3>${ftbl(antiGiF,n,'Reason')}
-    <h3>G9 — Candidate Preferences</h3>
-    <table class="r-table"><thead><tr><th>Position</th><th>Top Choice</th><th>%</th></tr></thead><tbody>
-      <tr><td>Senator</td><td>${topLbl(cleanCandFreq('prefSenator'))}</td><td class="num">${pct(sortDesc(cleanCandFreq('prefSenator'))[0]?.[1]||0,n)}%</td></tr>
-      <tr><td>Women Representative</td><td>${topLbl(cleanCandFreq('prefWomenRep'))}</td><td class="num">${pct(sortDesc(cleanCandFreq('prefWomenRep'))[0]?.[1]||0,n)}%</td></tr>
-      <tr><td>Member of Parliament</td><td>${topLbl(cleanCandFreq('prefMP'))}</td><td class="num">${pct(sortDesc(cleanCandFreq('prefMP'))[0]?.[1]||0,n)}%</td></tr>
-      <tr><td>Member of County Assembly</td><td>${topLbl(cleanCandFreq('prefMCA'))}</td><td class="num">${pct(sortDesc(cleanCandFreq('prefMCA'))[0]?.[1]||0,n)}%</td></tr>
-    </tbody></table>
-    <h3>I — Follow-up Consent (from responses)</h3>${ftbl(fupF,n,'Response')}`;
+
+    <h3>G9 — Senator Preferences (Full Breakdown)</h3>
+    ${ftbl(cleanCandFreq('prefSenator'),n,'Candidate')}
+
+    <h3>G9 — Women Representative Preferences (Full Breakdown)</h3>
+    ${ftbl(cleanCandFreq('prefWomenRep'),n,'Candidate')}
+
+    <h3>G9 — Member of Parliament by Constituency</h3>
+    <p style="font-size:12px;color:var(--muted);font-style:italic;margin-top:-6px;">Every named candidate is listed, including those with very low or 0%-rounded support.</p>
+    ${(()=>{
+      const groups=groupedCandFreq('prefMP','constituency',CONSTITS).filter(g=>g.candidates.length);
+      if(!groups.length)return'<p style="color:var(--muted2);font-style:italic">No MP data recorded yet.</p>';
+      let ht=`<table class="r-table"><thead><tr><th>Constituency</th><th>MP Candidate</th><th>Count</th><th>%</th></tr></thead><tbody>`;
+      groups.forEach(g=>{
+        g.candidates.forEach((c,i)=>{
+          ht+=`<tr><td>${i===0?esc(g.region):''}</td><td>${i===0?'🥇 ':''}${esc(c.label)}</td><td class="num">${c.count}</td><td class="num">${pct(c.count,g.total)}%</td></tr>`;
+        });
+      });
+      ht+='</tbody></table>';
+      return ht;
+    })()}
+    <h3>G9 — All MP Candidates (Full List, County-wide)</h3>
+    ${ftbl(cleanCandFreq('prefMP'),n,'Candidate')}
+
+    <h3>G9 — MCA Preferences by Ward</h3>
+    <p style="font-size:12px;color:var(--muted);font-style:italic;margin-top:-6px;">Every named candidate is listed, including those with very low or 0%-rounded support.</p>
+    ${(()=>{
+      const groups=groupedCandFreq('prefMCA','ward').filter(g=>g.candidates.length);
+      if(!groups.length)return'<p style="color:var(--muted2);font-style:italic">No MCA data recorded yet.</p>';
+      let ht=`<table class="r-table"><thead><tr><th>Ward</th><th>MCA Candidate</th><th>Count</th><th>%</th></tr></thead><tbody>`;
+      groups.forEach(g=>{
+        g.candidates.forEach((c,i)=>{
+          ht+=`<tr><td>${i===0?esc(g.region):''}</td><td>${i===0?'🥇 ':''}${esc(c.label)}</td><td class="num">${c.count}</td><td class="num">${pct(c.count,g.total)}%</td></tr>`;
+        });
+      });
+      ht+='</tbody></table>';
+      return ht;
+    })()}
+    <h3>G9 — All MCA Candidates (Full List, County-wide)</h3>
+    ${ftbl(cleanCandFreq('prefMCA'),n,'Candidate')}
+
+    <h3>I — Follow-up Consent</h3>${ftbl(fupF,n,'Response')}`;
+  /* ── NEW: Advice section in report ── */
+  document.getElementById('r-advice-content').innerHTML=`
+    <p>These sections capture open-text advice given by respondents to each leader. They are analysed by word frequency and sampled quotes below.</p>
+    <h3>G1.2 — Advice to President William Ruto (${rutoAdvice.length} responses)</h3>
+    <p><strong>Top themes:</strong></p>${adviceTopWords(rutoAdvice)}
+    <p><strong>Sample responses:</strong></p>${adviceQuoteSample(rutoAdvice)}
+    <hr style="border:none;border-top:1px solid var(--border);margin:18px 0">
+    <h3>G6 — Advice to Cecily Mbarire (${mbarireAdvice.length} responses)</h3>
+    <p><strong>Top themes:</strong></p>${adviceTopWords(mbarireAdvice)}
+    <p><strong>Sample responses:</strong></p>${adviceQuoteSample(mbarireAdvice)}
+    <hr style="border:none;border-top:1px solid var(--border);margin:18px 0">
+    <h3>G7.1 — Advice to Lenny Kivuti (${kivutiAdvice.length} responses)</h3>
+    <p><strong>Top themes:</strong></p>${adviceTopWords(kivutiAdvice)}
+    <p><strong>Sample responses:</strong></p>${adviceQuoteSample(kivutiAdvice)}
+    <hr style="border:none;border-top:1px solid var(--border);margin:18px 0">
+    <h3>G8.1 — Advice to Gitonga Mukunji (${mukunjiAdvice.length} responses)</h3>
+    <p><strong>Top themes:</strong></p>${adviceTopWords(mukunjiAdvice)}
+    <p><strong>Sample responses:</strong></p>${adviceQuoteSample(mukunjiAdvice)}`;
 
   document.getElementById('r-comm-content').innerHTML=`
     <h3>H1 — Office Contributing Most to Development</h3>
@@ -1673,7 +1921,7 @@ function buildReport(){
     <table class="r-table"><thead><tr><th>Age</th>${PERF_ORDER.map(p=>`<th>${p}</th>`).join('')}<th>Mean</th><th>N</th></tr></thead><tbody>
     ${AGE_ORDER.map(ag=>{const sub=data.filter(d=>d.age===ag);if(!sub.length)return'';const m=meanScore(sub,'performance',PERF_SCORE);return`<tr><td>${ag}</td>${PERF_ORDER.map(p=>`<td class="num">${pct(sub.filter(d=>d.performance===p).length,sub.length)}%</td>`).join('')}<td class="num">${m.toFixed(2)}</td><td class="num">${sub.length}</td></tr>`;}).join('')}
     </tbody></table>
-    <h3>Governor Pick × Performance Rating (Partisan Bias)</h3>
+    <h3>Governor Pick × Performance Rating</h3>
     <table class="r-table"><thead><tr><th>Governor Pick</th>${PERF_ORDER.map(p=>`<th>${p}</th>`).join('')}<th>Mean</th><th>N</th></tr></thead><tbody>
     ${GOV_CANDS.map(g=>{const sub=data.filter(d=>d.governor===g);if(!sub.length)return'';const m=meanScore(sub,'performance',PERF_SCORE);return`<tr><td>${esc(g)}</td>${PERF_ORDER.map(p=>`<td class="num">${pct(sub.filter(d=>d.performance===p).length,sub.length)}%</td>`).join('')}<td class="num">${m.toFixed(2)}</td><td class="num">${sub.length}</td></tr>`;}).join('')}
     </tbody></table>`;
@@ -1684,27 +1932,30 @@ function buildReport(){
   document.getElementById('r-rec-content').innerHTML=`
     <h3>For County Government / Incumbent</h3>
     <ul>
-      <li>Address the most cited undelivered sector — <strong>${topLbl(nDelF)}</strong> — with visible, ward-level projects.</li>
-      <li>Improve communication through <strong>${topLbl(infoF)}</strong> (top cited information source).</li>
-      <li>Priority needs analysis identifies <strong>${topNeedLabel}</strong> as top community priority.</li>
-      ${(devOF.None||0)>0?`<li><strong>${devOF.None} respondents (${pct(devOF.None,n)}%) said "None"</strong> of the offices have contributed to development — a significant trust deficit requiring urgent attention.</li>`:''}
+      <li>Address the most cited undelivered sector — <strong>${topLbl(nDelF)}</strong>.</li>
+      <li>Improve communication through <strong>${topLbl(infoF)}</strong> (top info source).</li>
+      <li>Community priority: <strong>${topNeedLabel}</strong>.</li>
+      ${(devOF.None||0)>0?`<li><strong>${devOF.None} respondents (${pct(devOF.None,n)}%) said "None"</strong> of the offices helped — a significant trust deficit.</li>`:''}
     </ul>
     <h3>For Cecily Mbarire's Campaign</h3>
     <div class="r-callout"><strong>Primary vulnerability:</strong> "${antiMbTop}"</div>
+    ${mbarireAdvice.length?`<p>Respondents' top advice themes: ${adviceThemes(mbarireAdvice).slice(0,3).map(([w])=>esc(w)).join(', ')}.</p>`:''}
     <h3>For Lenny Kivuti's Campaign</h3>
     <div class="r-callout gold"><strong>Primary vulnerability:</strong> "${antiKvTop}"</div>
+    ${kivutiAdvice.length?`<p>Respondents' top advice themes: ${adviceThemes(kivutiAdvice).slice(0,3).map(([w])=>esc(w)).join(', ')}.</p>`:''}
     <h3>For Gitonga Mukunji's Campaign</h3>
     <div class="r-callout"><strong>Primary vulnerability:</strong> "${antiGiTop}"</div>
+    ${mukunjiAdvice.length?`<p>Respondents' top advice themes: ${adviceThemes(mukunjiAdvice).slice(0,3).map(([w])=>esc(w)).join(', ')}.</p>`:''}
+    <h3>Presidential Level</h3>
+    ${rutoAdvice.length?`<p>Respondents' top advice themes for President Ruto: ${adviceThemes(rutoAdvice).slice(0,3).map(([w])=>esc(w)).join(', ')}.</p>`:'<p>No advice responses for President Ruto yet.</p>'}
     <h3>Follow-up Contacts</h3>
-    <p>${ctConsent} respondents consented to follow-up. ${ctPhone} provided phone numbers. Export the Contacts tab for the full directory.</p>
+    <p>${ctConsent} respondents consented to follow-up. ${ctPhone} provided phone numbers.</p>
     <h3>Methodology Notes</h3>
     <ul>
-      <li>Based on ${n} responses. Sub-group analyses with N&lt;30 should be interpreted cautiously.</li>
-      <li>H1 includes "None" as a valid response — ${devOF.None||0} respondents selected it.</li>
-      <li>G2 "Other" governor responses: ${Object.keys(govOtherF).length} unique names recorded.</li>
-      <li>Occupation data normalized from free-text. Raw values available in Excel export.</li>
-      <li>Contact details stored in a separate Firestore collection for privacy — ${ctTotal} records fetched.</li>
-      <li>Hero stat totals always reflect all responses regardless of active filters.</li>
+      <li>Based on ${n} responses. Sub-group N&lt;30 should be interpreted cautiously.</li>
+      <li>Advice fields (G1.2, G6, G7.1, G8.1) are open-text — analysed by word frequency.</li>
+      <li>H1 includes "None" — ${devOF.None||0} respondents selected it.</li>
+      <li>Contacts stored separately in Firestore for privacy — ${ctTotal} records fetched.</li>
     </ul>`;
 }
 
@@ -1721,29 +1972,58 @@ function exportExcel(){
   const govOtherF={};data.forEach(d=>{if(d.governor==='Other'&&d.governorOther&&d.governorOther.trim()){const k=d.governorOther.trim();govOtherF[k]=(govOtherF[k]||0)+1;}});
   const fupF=freq(data,'followUp');
   const partyF3=freq(data,'party');
+
+  // Advice raw rows for Excel
+  const adviceRows=[['Respondent ID','Constituency','Ward','Gender','Age','Advice to Ruto (G1.2)','Advice to Mbarire (G6)','Advice to Kivuti (G7.1)','Advice to Mukunji (G8.1)','Governor Pick','Re-elect Ruto']];
+  data.forEach(d=>{
+    if(d.adviceRuto||d.adviceMbarire||d.adviceKivuti||d.adviceMukunji){
+      adviceRows.push([d._respondentId||'',d.constituency||'',d.ward||'',d.gender||'',d.age||'',d.adviceRuto||'',d.adviceMbarire||'',d.adviceKivuti||'',d.adviceMukunji||'',d.governor||'',d.reelectRuto||'']);
+    }
+  });
+
   addSh('Demographics',[['ECS-2026 DEMOGRAPHICS',`N=${n}`,stamp],[],['A1 GENDER'],...rows(freq(data,'gender'),'Gender'),[],['A5 AGE'],...rows(freq(data,'age'),'Age Group'),[],['A2 CONSTITUENCY'],...rows(freq(data,'constituency'),'Constituency'),[],['A3 WARD'],...rows(freq(data,'ward'),'Ward'),[],['A6 EDUCATION'],...rows(freq(data,'education'),'Education'),[],['A7 EMPLOYMENT'],...rows(freq(data,'employment'),'Employment'),[],['A8 OCCUPATION (Normalized)'],...rows(occF,'Occupation Category')]);
   addSh('Political-B',[['SECTION B'],[],['B1 VOTER REGISTRATION'],...rows(freq(data,'voter'),'Registered?'),[],['B2 NOT DELIVERED (multi-select)'],...rows(freqMulti(data,'notDelivered'),'Sector')]);
   addSh('Information-C',[['SECTION C'],[],['C1 INFORMATION SOURCES'],...rows(freqMulti(data,'infoSources'),'Source')]);
   addSh('Governance-D',[['SECTION D'],[],['D1 PERFORMANCE'],...rows(freq(data,'performance'),'Rating'),[],['D2 AWARE OF PROJECTS'],...rows(freq(data,'projectsAware'),'Response'),[],['D3 MISSED PROMISES'],...rows(freq(data,'missedPromises'),'Response')]);
   addSh('Economics-E',[['SECTION E'],[],['E1 SME CHALLENGES (multi-select)'],...rows(freqMulti(data,'smeChallenges'),'Challenge')]);
-  addSh('Sentiment-G',[['SECTION G'],[],['G1 RE-ELECT RUTO'],...rows(freq(data,'reelectRuto'),'Response'),[],['G1.1 PREFERRED PRESIDENT (No-to-Ruto only)'],...rows(ppf,'Candidate'),[],['G2 GOVERNOR INTENTION'],...rows(freq(data,'governor'),'Candidate'),[],['G2 GOVERNOR OTHER (named)'],...rows(govOtherF,'Named Candidate'),[],['G3 PARTY PREFERENCE'],...rows(partyF3,'Party'),[],['G4 VOTE REASONS (multi)'],...rows(freqMulti(data,'voteReasons'),'Reason'),[],['G5 ANTI-MBARIRE (multi)'],...rows(freqMulti(data,'notMbarire'),'Reason'),[],['G7 ANTI-KIVUTI (multi)'],...rows(freqMulti(data,'notKivuti'),'Reason'),[],['G8 ANTI-GITONGA (multi)'],...rows(freqMulti(data,'notGitonga'),'Reason'),[],['G9 SENATOR (cleaned)'],...rows(cleanCandFreq('prefSenator'),'Candidate'),[],['G9 WOMEN REP (cleaned)'],...rows(cleanCandFreq('prefWomenRep'),'Candidate'),[],['G9 MP (cleaned)'],...rows(cleanCandFreq('prefMP'),'Candidate'),[],['G9 MCA (cleaned)'],...rows(cleanCandFreq('prefMCA'),'Candidate'),[],['I FOLLOW-UP CONSENT (responses)'],...rows(fupF,'Response')]);
-  addSh('Community-H',[['SECTION H'],[],['H1 DEV OFFICE (all options incl. None)'],...rows(freq(data,'devOffice'),'Office'),[],['H2 WORSHIP'],...rows(freq(data,'worship'),'Frequency')]);
+  addSh('Sentiment-G',[['SECTION G'],[],['G1 RE-ELECT RUTO'],...rows(freq(data,'reelectRuto'),'Response'),[],['G1.1 PREFERRED PRESIDENT (No-to-Ruto only)'],...rows(ppf,'Candidate'),[],['G2 GOVERNOR INTENTION'],...rows(freq(data,'governor'),'Candidate'),[],['G2 GOVERNOR OTHER (named)'],...rows(govOtherF,'Named Candidate'),[],['G3 PARTY PREFERENCE'],...rows(partyF3,'Party'),[],['G4 VOTE REASONS (multi)'],...rows(freqMulti(data,'voteReasons'),'Reason'),[],['G5 ANTI-MBARIRE (multi)'],...rows(freqMulti(data,'notMbarire'),'Reason'),[],['G7 ANTI-KIVUTI (multi)'],...rows(freqMulti(data,'notKivuti'),'Reason'),[],['G8 ANTI-GITONGA (multi)'],...rows(freqMulti(data,'notGitonga'),'Reason'),[],['G9 SENATOR (cleaned)'],...rows(cleanCandFreq('prefSenator'),'Candidate'),[],['G9 WOMEN REP (cleaned)'],...rows(cleanCandFreq('prefWomenRep'),'Candidate'),[],['G9 MP (cleaned)'],...rows(cleanCandFreq('prefMP'),'Candidate'),[],['G9 MCA (cleaned)'],...rows(cleanCandFreq('prefMCA'),'Candidate'),[],['I FOLLOW-UP CONSENT'],...rows(fupF,'Response')]);
+  addSh('MCA-by-Ward',[['G9 — EVERY MCA CANDIDATE, BY WARD'],['Ward','Candidate','Count','% of Ward N','Ward N'],...(()=>{
+    const out=[];
+    groupedCandFreq('prefMCA','ward').forEach(g=>{
+      if(!g.candidates.length)return;
+      g.candidates.forEach(c=>out.push([g.region,c.label,c.count,pct(c.count,g.total)+'%',g.total]));
+    });
+    return out;
+  })()]);
+  addSh('MP-by-Constituency',[['G9 — EVERY MP CANDIDATE, BY CONSTITUENCY'],['Constituency','Candidate','Count','% of Constituency N','Constituency N'],...(()=>{
+    const out=[];
+    groupedCandFreq('prefMP','constituency',CONSTITS).forEach(g=>{
+      if(!g.candidates.length)return;
+      g.candidates.forEach(c=>out.push([g.region,c.label,c.count,pct(c.count,g.total)+'%',g.total]));
+    });
+    return out;
+  })()]);
+  addSh('Advice-G12-G6-G71-G81',adviceRows);
+  addSh('Community-H',[['SECTION H'],[],['H1 DEV OFFICE (incl. None)'],...rows(freq(data,'devOffice'),'Office'),[],['H2 WORSHIP'],...rows(freq(data,'worship'),'Frequency')]);
   const ctRows=[['#','Full Name','Phone Number','Follow-up Consent','Researcher','Researcher Login','Submitted At','Respondent ID']];
   contactsData.forEach((d,i)=>ctRows.push([i+1,d.contactName||'',d.contactPhone||'',d.followUp||'',d._researcher||'',d._researcherLogin||'',d._submittedAt||'',d._respondentId||'']));
   addSh('Contacts-I',ctRows);
   addSh('CrossTab-Gov×Const',[['GOVERNOR × CONSTITUENCY'],['Constituency',...GOV_CANDS,'N'],...CONSTITS.map(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return[];return[c,...GOV_CANDS.map(g=>pct(sub.filter(d=>d.governor===g).length,sub.length)+'%'),sub.length];}).filter(r=>r.length)]);
-  addSh('CrossTab-H1×Const',[['H1 DEV OFFICE × CONSTITUENCY'],['Constituency',...DEV_OFFICES,'N'],...CONSTITS.map(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return[];return[c,...DEV_OFFICES.map(o=>pct(sub.filter(d=>d.devOffice===o).length,sub.length)+'%'),sub.length];}).filter(r=>r.length)]);
   addSh('PSValidation',[['A4 POLLING STATION VALIDATION'],['Status','Count','%'],...sortDesc((()=>{const pvRaw=freq(data,'_psValidation');const pvf={};Object.entries(pvRaw).forEach(([k,vv])=>{pvf[PS_LABEL_MAP[k]||k]=vv;});return pvf;})()).map(([l,vv])=>[l,vv,pct(vv,n)+'%'])]);
-  addSh('Summary',[['METRIC','VALUE','NOTE'],['Total Respondents',n,''],['Female',`${freq(data,'gender').Female||0} (${pct(freq(data,'gender').Female||0,n)}%)`,'A1'],['Male',`${freq(data,'gender').Male||0} (${pct(freq(data,'gender').Male||0,n)}%)`,'A1'],['Registered Voters',`${freq(data,'voter').Yes||0} (${pct(freq(data,'voter').Yes||0,n)}%)`,'B1'],['Re-elect Ruto Yes',`${pct(freq(data,'reelectRuto').Yes||0,n)}%`,'G1'],['Perf Mean',`${meanScore(data,'performance',PERF_SCORE).toFixed(2)}/4.0`,'D1'],['Mbarire Governor Intent',`${pct(freq(data,'governor')['Cecily Mbarire']||0,n)}%`,'G2'],['Kivuti Governor Intent',`${pct(freq(data,'governor')['Lenny Kivuti']||0,n)}%`,'G2'],['Gitonga Governor Intent',`${pct(freq(data,'governor')['Gitonga Mukunji']||0,n)}%`,'G2'],['H1 None (no office helped)',`${freq(data,'devOffice').None||0} (${pct(freq(data,'devOffice').None||0,n)}%)`,'H1'],['Contacts Collected',contactsData.length,'Section I'],['Contacts with Follow-up Consent',contactsData.filter(d=>d.followUp==='Yes').length,'Section I'],['Contacts with Phone',contactsData.filter(d=>d.contactPhone&&d.contactPhone.trim()).length,'Section I'],['GPS Verified',`${rawData.filter(d=>d._gpsLat&&!d._gpsSkipped).length} (${pct(rawData.filter(d=>d._gpsLat&&!d._gpsSkipped).length,rawData.length)}%)`,'Field'],['Active Researchers',new Set(rawData.map(d=>d._researcherLogin||d._researcher).filter(Boolean)).size,'Field']]);
+  addSh('PollingStations',[['COVERAGE BY POLLING STATION'],['Polling Station','Constituency','Ward','Count','%'],...(()=>{
+    const stationMeta={};
+    data.forEach(d=>{const p=d.pollingStation&&d.pollingStation.trim();if(!p)return;if(!stationMeta[p])stationMeta[p]={count:0,constituency:d.constituency||'',ward:d.ward||''};stationMeta[p].count++;});
+    return Object.entries(stationMeta).sort((a,b)=>b[1].count-a[1].count).map(([name,m])=>[name,m.constituency,m.ward,m.count,pct(m.count,n)+'%']);
+  })()]);
+  addSh('Summary',[['METRIC','VALUE','NOTE'],['Total Respondents',n,''],['Female',`${freq(data,'gender').Female||0} (${pct(freq(data,'gender').Female||0,n)}%)`,'A1'],['Male',`${freq(data,'gender').Male||0} (${pct(freq(data,'gender').Male||0,n)}%)`,'A1'],['Registered Voters',`${freq(data,'voter').Yes||0} (${pct(freq(data,'voter').Yes||0,n)}%)`,'B1'],['Re-elect Ruto Yes',`${pct(freq(data,'reelectRuto').Yes||0,n)}%`,'G1'],['Perf Mean',`${meanScore(data,'performance',PERF_SCORE).toFixed(2)}/4.0`,'D1'],['Mbarire Governor Intent',`${pct(freq(data,'governor')['Cecily Mbarire']||0,n)}%`,'G2'],['Kivuti Governor Intent',`${pct(freq(data,'governor')['Lenny Kivuti']||0,n)}%`,'G2'],['Advice to Ruto (filled)',data.filter(d=>d.adviceRuto&&d.adviceRuto.trim().length>3).length,'G1.2'],['Advice to Mbarire (filled)',data.filter(d=>d.adviceMbarire&&d.adviceMbarire.trim().length>3).length,'G6'],['Advice to Kivuti (filled)',data.filter(d=>d.adviceKivuti&&d.adviceKivuti.trim().length>3).length,'G7.1'],['Advice to Mukunji (filled)',data.filter(d=>d.adviceMukunji&&d.adviceMukunji.trim().length>3).length,'G8.1'],['H1 None',`${freq(data,'devOffice').None||0} (${pct(freq(data,'devOffice').None||0,n)}%)`,'H1'],['Contacts Collected',contactsData.length,'Section I'],['Contacts with Follow-up Consent',contactsData.filter(d=>d.followUp==='Yes').length,'Section I'],['Contacts with Phone',contactsData.filter(d=>d.contactPhone&&d.contactPhone.trim()).length,'Section I'],['GPS Verified',`${rawData.filter(d=>d._gpsLat&&!d._gpsSkipped).length} (${pct(rawData.filter(d=>d._gpsLat&&!d._gpsSkipped).length,rawData.length)}%)`,'Field']]);
   XLSX.writeFile(wb,`ecs2026_analytics_${stamp}.xlsx`);
-  toast(`✓ Excel exported — 13 sheets including Contacts, N=${n}`,'#1a4a2a');
+  toast(`✓ Excel exported — 14 sheets including Advice & Contacts, N=${n}`,'#1a4a2a');
 }
 
 /* ═══ TOAST ═══ */
 let tt;
 function toast(msg,bg='#0c1a0e'){const el=document.getElementById('toast');el.textContent=msg;el.style.background=bg;el.style.transform='translateY(0)';el.style.opacity='1';clearTimeout(tt);tt=setTimeout(()=>{el.style.transform='translateY(80px)';el.style.opacity='0';},3500);}
 
-/* Close modal on backdrop click */
 document.getElementById('printModal').addEventListener('click',function(e){if(e.target===this)closePrintModal();});
 </script>
 </body>
