@@ -1024,7 +1024,7 @@ const ADMIN_EMAILS = [
   "bettemanuel49@gmail.com",
   "senatorkivuti@gmail.com",
   "nicholaskasanga2@gmail.com",
-  "Kiiondwiga@gmail.com",
+  "kiiondwiga@gmail.com",
   "janekarimifaith@gmail.com",
 ];
 
@@ -1100,6 +1100,25 @@ function normalizeOcc(val){
   if(/unemploy/.test(v))return'Unemployed';
   if(/business|trade|entrepreneur|self.employ/.test(v))return'Business / Trade';
   return val.length>40?val.slice(0,38)+'…':val.trim();
+}
+
+/* Normalizes free-text presidential-candidate mentions (G1.1) into clean canonical labels */
+function normalizePresCandidate(val){
+  if(!val)return'';
+  const v=val.toLowerCase().trim();
+  if(/undecid|not\s*decid|not\s*yet|don'?t\s*know|unsure|none|no\s*idea/.test(v))return'Undecided';
+  if(/^decided$/.test(v))return'Decided (unspecified)';
+  if(/kalonzo|musyoka|wiper/.test(v))return'Kalonzo Musyoka';
+  if(/matiang|matiag|matian|gachiomo|fred\b/.test(v))return"Fred Matiang'i";
+  if(/gachagua|rigathi/.test(v))return'Rigathi Gachagua';
+  if(/sifuna|edwin/.test(v))return'Edwin Sifuna';
+  if(/wajakoya|reuben/.test(v))return'Reuben Wajakoya';
+  if(/ruto|william/.test(v))return'William Ruto';
+  if(/raila|baba|odinga/.test(v))return'Raila Odinga';
+  if(/mudavadi|musalia/.test(v))return'Musalia Mudavadi';
+  if(/karua|martha/.test(v))return'Martha Karua';
+  if(v==='other'||v==='opposition')return'Other / Opposition (unnamed)';
+  return val.trim().length>30?val.trim().slice(0,28)+'…':val.trim().replace(/\b\w/g,c=>c.toUpperCase());
 }
 
 function stripProjPrefix(text){
@@ -1341,7 +1360,7 @@ function buildSentiment(){
   const n=data.length;
   const rf=freq(data,'reelectRuto');
   mkChart('ch-ruto',{type:'bar',data:{labels:['Yes – Re-elect','No – Prefer Other'],datasets:[{data:[rf.Yes||0,rf.No||0],backgroundColor:PAL.ruto,borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#ede8df'}}}}});
-  wordCloud('wc-pref-pres',data.filter(d=>d.preferredPres&&d.preferredPres.trim()).map(d=>d.preferredPres));
+  wordCloud('wc-pref-pres',data.filter(d=>d.preferredPres&&d.preferredPres.trim()).map(d=>normalizePresCandidate(d.preferredPres)));
   const gvf=freq(data,'governor');const gvv=GOV_CANDS.map(k=>gvf[k]||0);
   mkChart('ch-gov-s',{type:'doughnut',data:{labels:GOV_CANDS,datasets:[{data:gvv,backgroundColor:PAL.gov,borderWidth:3,borderColor:'#fff'}]},options:{cutout:'60%',plugins:{legend:{display:false}},animation:{animateRotate:true}}});
   document.getElementById('legend-gov-s').innerHTML=GOV_CANDS.map((l,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${PAL.gov[i]}"></div>${esc(l)}: <strong>${pct(gvv[i],n)}%</strong> (${gvv[i]})</div>`).join('');
@@ -1448,7 +1467,7 @@ function buildCrosstab(){
   GOV_CANDS.forEach(g=>{const sub=data.filter(d=>d.governor===g);if(!sub.length)return;const m=meanScore(sub,'performance',PERF_SCORE);ht+=`<tr><td>${esc(g)}</td>${PERF_ORDER.map(p=>`<td>${pct(sub.filter(d=>d.performance===p).length,sub.length)}%</td>`).join('')}<td style="color:var(--leaf);font-weight:600">${m.toFixed(2)}</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
   ht+='</tbody>';document.getElementById('xtab-gov-perf').innerHTML=ht;
   ht=`<thead><tr><th>Constituency</th><th>Re-elect Yes %</th><th>Re-elect No %</th><th>N</th></tr></thead><tbody>`;
-  CONSTITS.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;const y=sub.filter(d=>d.reelectRuto==='Yes').length;ht+=`<tr><td>${c}</td><td>${pct(y,sub.length)}%</td><td>${pct(sub.length-y,sub.length)}%</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
+  CONSTITS.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;const y=sub.filter(d=>d.reelectRuto==='Yes').length;ht+=`<tr><td>${c}</td><td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="width:${pct(y,sub.length)}%;background:var(--red)"></div></div>${pct(y,sub.length)}%</div></td><td>${pct(sub.length-y,sub.length)}%</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
   ht+='</tbody>';document.getElementById('xtab-ruto-const').innerHTML=ht;
   ht=`<thead><tr><th>Constituency</th>${PARTIES.slice(0,4).map(p=>`<th>${p}</th>`).join('')}<th>Other</th><th>N</th></tr></thead><tbody>`;
   CONSTITS.forEach(c=>{const sub=data.filter(d=>d.constituency===c);if(!sub.length)return;ht+=`<tr><td>${c}</td>${PARTIES.slice(0,4).map(p=>`<td>${pct(sub.filter(d=>d.party===p).length,sub.length)}%</td>`).join('')}<td>${pct(sub.filter(d=>d.party&&!PARTIES.slice(0,4).includes(d.party)).length,sub.length)}%</td><td style="color:var(--muted2)">${sub.length}</td></tr>`;});
@@ -1472,7 +1491,7 @@ function buildQualitative(){
   wordCloud('wc-proj-del-q',data.map(d=>stripProjPrefix(d.projectsDelivered)).filter(Boolean));
   wordCloud('wc-proj-miss-q',data.map(d=>stripProjPrefix(d.projectsMissing)).filter(Boolean));
   const ppf={};
-  data.forEach(d=>{const vv=(d.preferredPres||'').trim();if(vv&&d.reelectRuto==='No')ppf[vv]=(ppf[vv]||0)+1;});
+  data.forEach(d=>{const raw=(d.preferredPres||'').trim();if(raw&&d.reelectRuto==='No'){const vv=normalizePresCandidate(raw);ppf[vv]=(ppf[vv]||0)+1;}});
   hbar('hbar-pref-pres-q',sortDesc(ppf),n,'fill-red',10);
   hbar('hbar-mp-q', sortDesc(cleanCandFreq('prefMP')), n,'fill-sky', 10);
   hbar('hbar-mca-q',sortDesc(cleanCandFreq('prefMCA')),n,'fill-plum',10);
@@ -1715,11 +1734,11 @@ function buildReport(){
 
   document.getElementById('r-eco-content').innerHTML=`<h3>E1 — SME Challenges</h3>${ftbl(smeF,n,'Challenge')}`;
 
- const ppf={};data.forEach(d=>{const vv=(d.preferredPres||'').trim();if(vv&&d.reelectRuto==='No')ppf[vv]=(ppf[vv]||0)+1;});
+ const ppf={};data.forEach(d=>{const raw=(d.preferredPres||'').trim();if(raw&&d.reelectRuto==='No'){const vv=normalizePresCandidate(raw);ppf[vv]=(ppf[vv]||0)+1;}});
   document.getElementById('r-sent-content').innerHTML=`
     <h3>G1 — Re-elect President Ruto?</h3>${ftbl(rutoF,n,'Response')}
     ${pct(rutoF.Yes||0,n)<50?`<div class="r-callout"><strong>Note:</strong> Majority oppose re-electing Ruto.</div>`:''}
-    <h3>G1.1 — Preferred Presidential Candidate (No-to-Ruto respondents)</h3>${ftbl(ppf,rutoF.No||1,'Candidate')}
+    <h3>G1.1 — Preferred Presidential Candidate (No-to-Ruto respondents, normalized)</h3>${ftbl(ppf,rutoF.No||1,'Candidate')}
     <h3>G2 — Governor Voting Intention</h3>${ftbl(govF,n,'Candidate')}
     ${Object.keys(govOtherF).length?`<h3>G2 — "Other" Governor Named</h3>${ftbl(govOtherF,govF.Other||1,'Named Candidate')}`:''}
     <h3>G3 — Party Preference</h3>${ftbl(partyF2,n,'Party')}
@@ -1850,6 +1869,7 @@ function buildReport(){
       <li>Based on ${n} responses. Sub-group N&lt;30 should be interpreted cautiously.</li>
       <li>Advice fields (G1.2, G6, G7.1, G8.1) are open-text — analysed by word frequency.</li>
       <li>H1 includes "None" — ${devOF.None||0} respondents selected it.</li>
+      <li>G1.1 preferred-president responses are normalized into canonical candidate names before tabulation.</li>
       <li>Contacts stored separately in Firestore for privacy — ${ctTotal} records fetched.</li>
     </ul>`;
 }
@@ -1863,7 +1883,7 @@ function exportExcel(){
   const wb=XLSX.utils.book_new();
   function addSh(name,d){XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(d),name.slice(0,31));}
   const occF={};data.forEach(d=>{const k=normalizeOcc(d.occupation);if(k)occF[k]=(occF[k]||0)+1;});
-  const ppf={};data.forEach(d=>{const vv=(d.preferredPres||'').trim();if(vv&&d.reelectRuto==='No')ppf[vv]=(ppf[vv]||0)+1;});
+  const ppf={};data.forEach(d=>{const raw=(d.preferredPres||'').trim();if(raw&&d.reelectRuto==='No'){const vv=normalizePresCandidate(raw);ppf[vv]=(ppf[vv]||0)+1;}});
   const govOtherF={};data.forEach(d=>{if(d.governor==='Other'&&d.governorOther&&d.governorOther.trim()){const k=d.governorOther.trim();govOtherF[k]=(govOtherF[k]||0)+1;}});
   const fupF=freq(data,'followUp');
   const partyF3=freq(data,'party');
@@ -1881,7 +1901,7 @@ function exportExcel(){
   addSh('Information-C',[['SECTION C'],[],['C1 INFORMATION SOURCES'],...rows(freqMulti(data,'infoSources'),'Source')]);
   addSh('Governance-D',[['SECTION D'],[],['D1 PERFORMANCE'],...rows(freq(data,'performance'),'Rating'),[],['D2 AWARE OF PROJECTS'],...rows(freq(data,'projectsAware'),'Response'),[],['D3 MISSED PROMISES'],...rows(freq(data,'missedPromises'),'Response')]);
   addSh('Economics-E',[['SECTION E'],[],['E1 SME CHALLENGES (multi-select)'],...rows(freqMulti(data,'smeChallenges'),'Challenge')]);
-  addSh('Sentiment-G',[['SECTION G'],[],['G1 RE-ELECT RUTO'],...rows(freq(data,'reelectRuto'),'Response'),[],['G1.1 PREFERRED PRESIDENT (No-to-Ruto only)'],...rows(ppf,'Candidate'),[],['G2 GOVERNOR INTENTION'],...rows(freq(data,'governor'),'Candidate'),[],['G2 GOVERNOR OTHER (named)'],...rows(govOtherF,'Named Candidate'),[],['G3 PARTY PREFERENCE'],...rows(partyF3,'Party'),[],['G4 VOTE REASONS (multi)'],...rows(freqMulti(data,'voteReasons'),'Reason'),[],['G5 ANTI-MBARIRE (multi)'],...rows(freqMulti(data,'notMbarire'),'Reason'),[],['G7 ANTI-KIVUTI (multi)'],...rows(freqMulti(data,'notKivuti'),'Reason'),[],['G8 ANTI-GITONGA (multi)'],...rows(freqMulti(data,'notGitonga'),'Reason'),[],['G9 SENATOR (cleaned)'],...rows(cleanCandFreq('prefSenator'),'Candidate'),[],['G9 WOMEN REP (cleaned)'],...rows(cleanCandFreq('prefWomenRep'),'Candidate'),[],['G9 MP (cleaned)'],...rows(cleanCandFreq('prefMP'),'Candidate'),[],['G9 MCA (cleaned)'],...rows(cleanCandFreq('prefMCA'),'Candidate'),[],['I FOLLOW-UP CONSENT'],...rows(fupF,'Response')]);
+  addSh('Sentiment-G',[['SECTION G'],[],['G1 RE-ELECT RUTO'],...rows(freq(data,'reelectRuto'),'Response'),[],['G1.1 PREFERRED PRESIDENT (No-to-Ruto only, normalized)'],...rows(ppf,'Candidate'),[],['G2 GOVERNOR INTENTION'],...rows(freq(data,'governor'),'Candidate'),[],['G2 GOVERNOR OTHER (named)'],...rows(govOtherF,'Named Candidate'),[],['G3 PARTY PREFERENCE'],...rows(partyF3,'Party'),[],['G4 VOTE REASONS (multi)'],...rows(freqMulti(data,'voteReasons'),'Reason'),[],['G5 ANTI-MBARIRE (multi)'],...rows(freqMulti(data,'notMbarire'),'Reason'),[],['G7 ANTI-KIVUTI (multi)'],...rows(freqMulti(data,'notKivuti'),'Reason'),[],['G8 ANTI-GITONGA (multi)'],...rows(freqMulti(data,'notGitonga'),'Reason'),[],['G9 SENATOR (cleaned)'],...rows(cleanCandFreq('prefSenator'),'Candidate'),[],['G9 WOMEN REP (cleaned)'],...rows(cleanCandFreq('prefWomenRep'),'Candidate'),[],['G9 MP (cleaned)'],...rows(cleanCandFreq('prefMP'),'Candidate'),[],['G9 MCA (cleaned)'],...rows(cleanCandFreq('prefMCA'),'Candidate'),[],['I FOLLOW-UP CONSENT'],...rows(fupF,'Response')]);
   addSh('Advice-G12-G6-G71-G81',adviceRows);
   addSh('Community-H',[['SECTION H'],[],['H1 DEV OFFICE (incl. None)'],...rows(freq(data,'devOffice'),'Office'),[],['H2 WORSHIP'],...rows(freq(data,'worship'),'Frequency')]);
   const ctRows=[['#','Full Name','Phone Number','Follow-up Consent','Researcher','Researcher Login','Submitted At','Respondent ID']];
