@@ -392,9 +392,9 @@ img.print-chart{display:none;}
   </div>
   <div class="tb-actions">
     <button class="tbtn" onclick="refreshData()" id="refreshBtn">↻ Refresh</button>
-    <button class="tbtn print-btn" onclick="openPrintModal()">🖨 Print</button>
+    <button class="tbtn print-btn" onclick="openPrintModal()" id="printBtn">🖨 Print</button>
     <button class="tbtn" onclick="switchTab('report',document.querySelector('[data-tab=report]'))">📄 Report</button>
-    <button class="tbtn primary" onclick="exportExcel()">⬇ Excel</button>
+    <button class="tbtn primary" onclick="exportExcel()" id="excelBtn">⬇ Excel</button>
     <button class="tbtn danger" onclick="adminSignOut()">Sign Out</button>
   </div>
 </div>
@@ -933,7 +933,7 @@ img.print-chart{display:none;}
   <div class="card">
     <div class="card-head" style="padding-bottom:14px;">
       <div><div class="card-title">Contact Directory</div><div class="card-sub">All contacts (consent = Yes shown first)</div></div>
-      <button class="tbtn" style="font-size:12px;padding:6px 12px;color:var(--ink);border-color:var(--border);background:#fff;" onclick="exportContactsExcel()">⬇ Export Contacts</button>
+      <button class="tbtn" style="font-size:12px;padding:6px 12px;color:var(--ink);border-color:var(--border);background:#fff;" onclick="exportContactsExcel()" id="contactsExportBtn">⬇ Export Contacts</button>
     </div>
     <div class="card-body">
       <input type="text" class="contacts-search" id="contactsSearch" placeholder="Search by name, phone, or researcher…" oninput="renderContactsTable()">
@@ -952,9 +952,9 @@ img.print-chart{display:none;}
 <div class="tab-content" id="tab-report">
   <div class="report-wrap">
     <div class="report-actions">
-      <button class="tbtn" style="color:var(--ink);border-color:var(--border);background:#fff;" onclick="openPrintModal()">🖨 Print with Charts</button>
-      <button class="tbtn" style="color:var(--ink);border-color:var(--border);background:#fff;" onclick="printReportOnly()">📄 Print Report Only</button>
-      <button class="tbtn primary" onclick="exportExcel()">⬇ Export Excel</button>
+      <button class="tbtn" style="color:var(--ink);border-color:var(--border);background:#fff;" onclick="openPrintModal()" id="printChartsBtn">🖨 Print with Charts</button>
+      <button class="tbtn" style="color:var(--ink);border-color:var(--border);background:#fff;" onclick="printReportOnly()" id="printReportBtn">📄 Print Report Only</button>
+      <button class="tbtn primary" onclick="exportExcel()" id="excelReportBtn">⬇ Export Excel</button>
     </div>
     <div class="report-doc" id="reportDoc">
       <div class="r-cover">
@@ -1049,11 +1049,43 @@ auth.onAuthStateChanged(async user=>{
   document.getElementById('adminName').textContent=user.displayName||user.email;
   if(user.photoURL)document.getElementById('adminAvatar').src=user.photoURL;
   fetchData();
+  watchFeatureFlags();
 });
 
 /* ══════════ STATE ══════════ */
 let rawData=[],data=[],contactsData=[];
 const charts={};
+/* ══════════ FEATURE FLAGS (controlled from Admin Controls page) ══════════ */
+const FEATURE_DEFAULTS={
+  printEnabled:true,printLabel:'🖨 Print',
+  excelEnabled:true,excelLabel:'⬇ Excel',
+  printChartsEnabled:true,printChartsLabel:'🖨 Print with Charts',
+  printReportEnabled:true,printReportLabel:'📄 Print Report Only',
+  excelReportEnabled:true,excelReportLabel:'⬇ Export Excel',
+  contactsExportEnabled:true,contactsExportLabel:'⬇ Export Contacts',
+};
+let _ffUnsub=null;
+function watchFeatureFlags(){
+  if(_ffUnsub)return;
+  _ffUnsub=db.collection('settings').doc('features').onSnapshot(snap=>{
+    applyFeatureFlags(snap.exists?snap.data():{});
+  },err=>console.warn('Feature flag sync failed:',err.message));
+}
+function applyFeatureFlags(raw){
+  const s={...FEATURE_DEFAULTS,...(raw||{})};
+  [['printBtn','printEnabled','printLabel'],
+   ['excelBtn','excelEnabled','excelLabel'],
+   ['printChartsBtn','printChartsEnabled','printChartsLabel'],
+   ['printReportBtn','printReportEnabled','printReportLabel'],
+   ['excelReportBtn','excelReportEnabled','excelReportLabel'],
+   ['contactsExportBtn','contactsExportEnabled','contactsExportLabel']
+  ].forEach(([id,enabledKey,labelKey])=>{
+    const btn=document.getElementById(id);if(!btn)return;
+    btn.disabled=!s[enabledKey];
+    btn.textContent=s[labelKey];
+    btn.title=s[enabledKey]?'':'Disabled by admin — enable it in Admin Controls';
+  });
+}
 
 /* ══════════ PALETTES ══════════ */
 const PAL={
